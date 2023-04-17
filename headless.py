@@ -1,4 +1,6 @@
+import os
 import time
+from distutils.util import strtobool
 from pathlib import Path
 from queue import Queue
 from threading import Thread
@@ -28,14 +30,21 @@ BITS_PER_BYTE = 11
 
 # Configure the headless mode for the Kivy application and initialize the display
 def setup_headless(
-    max_fps: int = 20,
-    width: int = 240,
-    height: int = 240,
-    baudrate: int = 96000000,
-    debug_mode: bool = False,
+    max_fps: int = int(os.environ.get("HEADLESS_KIVY_PI_MAX_FPS", "20")),
+    width: int = int(os.environ.get("HEADLESS_KIVY_PI_WIDTH", "240")),
+    height: int = int(os.environ.get("HEADLESS_KIVY_PI_HEIGHT", "240")),
+    baudrate: int = int(os.environ.get("HEADLESS_KIVY_PI_BAUDRATE", "96000000")),
+    debug_mode: bool = strtobool(os.environ.get("HEADLESS_KIVY_PI_DEBUG", "False"))
+    == 1,
     display_class: Type[DisplaySPI] = ST7789,
-    double_buffering: bool = True,
-    synchronous_clock: bool = True,
+    double_buffering: bool = strtobool(
+        os.environ.get("HEADLESS_KIVY_PI_DOUBLE_BUFFERING", "True")
+    )
+    == 1,
+    synchronous_clock: bool = strtobool(
+        os.environ.get("HEADLESS_KIVY_PI_SYNCHRONOUS_CLOCK", "True")
+    )
+    == 1,
 ):
     """
     Configures the headless mode for the Kivy application.
