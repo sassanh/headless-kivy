@@ -1,5 +1,7 @@
 import time
 from pathlib import Path
+from queue import Queue
+from threading import Thread
 from typing import Type
 
 import numpy
@@ -32,6 +34,7 @@ def setup_headless(
     baudrate: int = 96000000,
     debug_mode: bool = False,
     display_class: Type[DisplaySPI] = ST7789,
+    synchronous_clock: bool = True,
 ):
     """
     Configures the headless mode for the Kivy application.
@@ -43,10 +46,17 @@ def setup_headless(
     :param debug_mode: If set to True, the application will print debug information, \
 including FPS.
     :param display_class: The display class to use (default is ST7789).
+frame while sending the last frame to the display.
+    :param synchronous_clock: If set to True, Kivy will wait for the LCD before \
+rendering next frames. This will cause Headless to skip frames if they are rendered \
+before the LCD has finished displaying the previous frames. If set to False, frames \
+will be rendered asynchronously, letting Kivy render frames regardless of display \
+being able to catch up or not at the expense of possible frame skipping.
     """
     Headless.width = width
     Headless.height = height
     Headless.debug_mode = debug_mode
+    Headless.synchronous_clock = synchronous_clock
 
     desired_fps = baudrate / (width * height * BYTES_PER_PIXEL * BITS_PER_BYTE)
     Config.set("kivy", "kivy_clock", "default")
@@ -92,6 +102,7 @@ class Headless(Widget):
     debug_mode: bool
     width: int
     height: int
+    synchronous_clock: bool
 
     def __init__(self, **kwargs):
         if Headless.width is None or Headless.height is None:
@@ -100,7 +111,7 @@ class Headless(Widget):
         self.last_second = int(time.time())
         self.rendered_frames = 0
         self.skipped_frames = 0
-        self.last_hash = 0
+        self.pending_render_frames = Queue(1)
 
         self.canvas = Canvas()
         with self.canvas:
@@ -163,19 +174,41 @@ class Headless(Widget):
                 self.rendered_frames = 0
                 self.skipped_frames = 0
 
+            # If `synchronous_clock` is False, skip frames if there are any pending.
+            if not Headless.synchronous_clock:
+                if not self.pending_render_frames.empty():
+                    self.skipped_frames += 1
+                    return
+
             self.rendered_frames += 1
 
-            data = numpy.frombuffer(self.texture.pixels, dtype=numpy.uint8).reshape(
-                Headless.width, Headless.height, -1
-            )
-            data = data[:, :, :3].astype(numpy.uint16)
+            def render_task(pixels, last_thread):
+                data = numpy.frombuffer(pixels, dtype=numpy.uint8).reshape(
+                    Headless.width, Headless.height, -1
+                )
+                data = data[:, :, :3].astype(numpy.uint16)
 
-            color = (
-                ((data[:, :, 0] & 0xF8) << 8)
-                | ((data[:, :, 1] & 0xFC) << 3)
-                | (data[:, :, 2] >> 3)
+                color = (
+                    ((data[:, :, 0] & 0xF8) << 8)
+                    | ((data[:, :, 1] & 0xFC) << 3)
+                    | (data[:, :, 2] >> 3)
+                )
+                data = bytes(
+                    numpy.dstack(((color >> 8) & 0xFF, color & 0xFF)).flatten().tolist()
+                )
+                if last_thread:
+                    last_thread.join()
+                self.pending_render_frames.get()
+                display._block(0, 0, Headless.width - 1, Headless.height - 1, data)
+
+            thread = Thread(
+                target=render_task,
+                args=(
+                    self.texture.pixels,
+                    self.pending_render_frames.queue[-1]
+                    if self.pending_render_frames.qsize() > 0
+                    else None,
+                ),
             )
-            data = bytes(
-                numpy.dstack(((color >> 8) & 0xFF, color & 0xFF)).flatten().tolist()
-            )
-            display._block(0, 0, Headless.width - 1, Headless.height - 1, data)
+            self.pending_render_frames.put(thread)
+            thread.start()
