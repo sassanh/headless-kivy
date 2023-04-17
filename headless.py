@@ -34,6 +34,7 @@ def setup_headless(
     baudrate: int = 96000000,
     debug_mode: bool = False,
     display_class: Type[DisplaySPI] = ST7789,
+    double_buffering: bool = True,
     synchronous_clock: bool = True,
 ):
     """
@@ -46,6 +47,7 @@ def setup_headless(
     :param debug_mode: If set to True, the application will print debug information, \
 including FPS.
     :param display_class: The display class to use (default is ST7789).
+    :param double_buffering: Is set to `True`, it will let Kivy generate the next \
 frame while sending the last frame to the display.
     :param synchronous_clock: If set to True, Kivy will wait for the LCD before \
 rendering next frames. This will cause Headless to skip frames if they are rendered \
@@ -56,6 +58,7 @@ being able to catch up or not at the expense of possible frame skipping.
     Headless.width = width
     Headless.height = height
     Headless.debug_mode = debug_mode
+    Headless.double_buffering = double_buffering
     Headless.synchronous_clock = synchronous_clock
 
     desired_fps = baudrate / (width * height * BYTES_PER_PIXEL * BITS_PER_BYTE)
@@ -102,6 +105,7 @@ class Headless(Widget):
     debug_mode: bool
     width: int
     height: int
+    double_buffering: bool
     synchronous_clock: bool
 
     def __init__(self, **kwargs):
@@ -111,7 +115,7 @@ class Headless(Widget):
         self.last_second = int(time.time())
         self.rendered_frames = 0
         self.skipped_frames = 0
-        self.pending_render_frames = Queue(1)
+        self.pending_render_frames = Queue(2 if Headless.double_buffering else 1)
 
         self.canvas = Canvas()
         with self.canvas:
@@ -174,9 +178,13 @@ class Headless(Widget):
                 self.rendered_frames = 0
                 self.skipped_frames = 0
 
-            # If `synchronous_clock` is False, skip frames if there are any pending.
+            # If `synchronous_clock` is False, skip frames if there are more than one
+            # pending render in case `double_buffering` is enabled, or if there are ANY
+            # pending render in case `double_buffering` is disabled.
             if not Headless.synchronous_clock:
-                if not self.pending_render_frames.empty():
+                if self.pending_render_frames.qsize() > (
+                    1 if Headless.double_buffering else 0
+                ):
                     self.skipped_frames += 1
                     return
 
