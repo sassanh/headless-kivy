@@ -116,6 +116,7 @@ class Headless(Widget):
         self.rendered_frames = 0
         self.skipped_frames = 0
         self.pending_render_frames = Queue(2 if Headless.double_buffering else 1)
+        self.last_hash = 0
 
         self.canvas = Canvas()
         with self.canvas:
@@ -195,6 +196,11 @@ class Headless(Widget):
                     Headless.width, Headless.height, -1
                 )
                 data = data[:, :, :3].astype(numpy.uint16)
+                data_hash = hash(data.data.tobytes())
+                if data_hash == self.last_hash:
+                    self.pending_render_frames.get()
+                    return
+                self.last_hash = data_hash
 
                 color = (
                     ((data[:, :, 0] & 0xF8) << 8)
