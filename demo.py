@@ -32,9 +32,11 @@ class ScreenLayerApp(App):
         print(self.fps)
         self.button.text = self.fps
         if self.button.pos[0] == 0:
-            Animation(x=self.float_layout.width - self.button.width).start(self.button)
+            Animation(x=self.float_layout.width - self.button.width, duration=3).start(
+                self.button
+            )
         else:
-            Animation(x=0).start(self.button)
+            Animation(x=0, duration=3).start(self.button)
 
     def build(self):
         self.float_layout = FboFloatLayout()
@@ -44,15 +46,15 @@ class ScreenLayerApp(App):
 
         def anim_btn(*_):
             if self.button.pos[0] == 0:
-                Animation(x=self.float_layout.width - self.button.width).start(
-                    self.button
-                )
+                Animation(
+                    x=self.float_layout.width - self.button.width, duration=3
+                ).start(self.button)
             else:
-                Animation(x=0).start(self.button)
+                Animation(x=0, duration=3).start(self.button)
 
         self.button.bind(on_press=anim_btn)
 
-        Clock.schedule_interval(self.animate, 3)
+        Clock.schedule_interval(self.animate, 5)
 
         return self.float_layout
 

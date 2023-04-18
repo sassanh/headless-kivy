@@ -3,7 +3,7 @@ import time
 from distutils.util import strtobool
 from pathlib import Path
 from queue import Queue
-from threading import Thread
+from threading import Semaphore, Thread, Timer
 from typing import Type
 
 import numpy
@@ -11,7 +11,8 @@ from adafruit_rgb_display.rgb import DisplaySPI
 from kivy.app import ObjectProperty, Widget
 from kivy.base import Clock
 from kivy.config import Config
-from kivy.graphics import Canvas, ClearBuffers, ClearColor, Color, Fbo, Rectangle
+from kivy.graphics import (Canvas, ClearBuffers, ClearColor, Color, Fbo,
+                           Rectangle)
 
 # Check if the code is running on a Raspberry Pi
 IS_RPI = Path("/etc/rpi-issue").exists()
@@ -30,6 +31,7 @@ BITS_PER_BYTE = 11
 
 # Configure the headless mode for the Kivy application and initialize the display
 def setup_headless(
+    min_fps: int = int(os.environ.get("HEADLESS_KIVY_PI_MIN_FPS", "1")),
     max_fps: int = int(os.environ.get("HEADLESS_KIVY_PI_MAX_FPS", "20")),
     width: int = int(os.environ.get("HEADLESS_KIVY_PI_WIDTH", "240")),
     height: int = int(os.environ.get("HEADLESS_KIVY_PI_HEIGHT", "240")),
@@ -49,6 +51,7 @@ def setup_headless(
     """
     Configures the headless mode for the Kivy application.
 
+    :param min_fps: Minimum frames per second for when the Kivy application is idle.
     :param max_fps: Maximum frames per second for the Kivy application.
     :param width: The width of the display in pixels.
     :param height: The height of the display in pixels.
@@ -64,13 +67,32 @@ before the LCD has finished displaying the previous frames. If set to False, fra
 will be rendered asynchronously, letting Kivy render frames regardless of display \
 being able to catch up or not at the expense of possible frame skipping.
     """
+    if min_fps > max_fps:
+        raise ValueError(
+            f"""Invalid value "{min_fps}" for "min_fps", it can't be higher than \
+"max_fps" which is set to "{max_fps}"."""
+        )
+
+    fps_cap = baudrate / (width * height * BYTES_PER_PIXEL * BITS_PER_BYTE)
+
+    if debug_mode:
+        print(f"Theoretically possible FPS based on baudrate: {fps_cap:.1f}")
+
+    if max_fps > fps_cap:
+        raise ValueError(
+            f"""Invalid value "{max_fps}" for "max_fps", it can't be higher than \
+"{fps_cap:.1f}" (baudrate={baudrate} ÷ (width={width} x height={height} x \
+bytes per pixel={BYTES_PER_PIXEL} x bits per byte={BITS_PER_BYTE}))"""
+        )
+
+    Headless.min_fps = min_fps
+    Headless.max_fps = max_fps
     Headless.width = width
     Headless.height = height
     Headless.debug_mode = debug_mode
     Headless.double_buffering = double_buffering
     Headless.synchronous_clock = synchronous_clock
 
-    desired_fps = baudrate / (width * height * BYTES_PER_PIXEL * BITS_PER_BYTE)
     Config.set("kivy", "kivy_clock", "default")
     Config.set("graphics", "fbo", "force-hardware")
     Config.set("graphics", "fullscreen", "0")
@@ -80,10 +102,6 @@ being able to catch up or not at the expense of possible frame skipping.
     Config.set("graphics", "vsync", "0")
     Config.set("graphics", "width", f"{width}")
     Config.set("graphics", "height", f"{height}")
-
-    if debug_mode:
-        print(f"Desired FPS: {desired_fps:.1f}")
-        print(f'Kivy "maxfps": {max_fps}')
 
     if IS_RPI:
         Config.set("graphics", "window_state", "hidden")
@@ -111,9 +129,11 @@ being able to catch up or not at the expense of possible frame skipping.
 class Headless(Widget):
     texture = ObjectProperty(None, allownone=True)
 
-    debug_mode: bool
+    min_fps: int
+    max_fps: int
     width: int
     height: int
+    debug_mode: bool
     double_buffering: bool
     synchronous_clock: bool
 
@@ -124,8 +144,10 @@ class Headless(Widget):
         self.last_second = int(time.time())
         self.rendered_frames = 0
         self.skipped_frames = 0
-        self.pending_render_frames = Queue(2 if Headless.double_buffering else 1)
+        self.pending_render_frames_queue = Queue(2 if Headless.double_buffering else 1)
         self.last_hash = 0
+        self.kivy_fps_control_queue = Semaphore(2)
+        self.fps = self.max_fps
 
         self.canvas = Canvas()
         with self.canvas:
@@ -143,6 +165,7 @@ class Headless(Widget):
             self.render_on_display, 0, True
         )
         self.render_on_display_event()
+        Timer(1 / self.fps, self.release_frame).start()
 
     def add_widget(self, *args, **kwargs):
         canvas = self.canvas
@@ -171,9 +194,16 @@ class Headless(Widget):
     def on_alpha(self, _, value):
         self.fbo_color.rgba = (1, 1, 1, value)
 
+    def release_frame(self):
+        self.kivy_fps_control_queue.release()
+        Timer(1 / self.fps, self.release_frame).start()
+
     def render_on_display(self, *_):
         # Only render when running on a Raspberry Pi
         if IS_RPI:
+            # Block if it is rendering more FPS than expected
+            self.kivy_fps_control_queue.acquire()
+
             # Increment rendered_frames/skipped_frames count every frame and reset their
             # values to zero every second.
             current_second = int(time.time())
@@ -192,7 +222,7 @@ class Headless(Widget):
             # pending render in case `double_buffering` is enabled, or if there are ANY
             # pending render in case `double_buffering` is disabled.
             if not Headless.synchronous_clock:
-                if self.pending_render_frames.qsize() > (
+                if self.pending_render_frames_queue.qsize() > (
                     1 if Headless.double_buffering else 0
                 ):
                     self.skipped_frames += 1
@@ -207,8 +237,11 @@ class Headless(Widget):
                 data = data[:, :, :3].astype(numpy.uint16)
                 data_hash = hash(data.data.tobytes())
                 if data_hash == self.last_hash:
-                    self.pending_render_frames.get()
+                    self.pending_render_frames_queue.get()
+                    self.fps = self.min_fps
                     return
+                else:
+                    self.fps = self.max_fps
                 self.last_hash = data_hash
 
                 color = (
@@ -221,17 +254,17 @@ class Headless(Widget):
                 )
                 if last_thread:
                     last_thread.join()
-                self.pending_render_frames.get()
+                self.pending_render_frames_queue.get()
                 display._block(0, 0, Headless.width - 1, Headless.height - 1, data)
 
             thread = Thread(
                 target=render_task,
                 args=(
                     self.texture.pixels,
-                    self.pending_render_frames.queue[-1]
-                    if self.pending_render_frames.qsize() > 0
+                    self.pending_render_frames_queue.queue[-1]
+                    if self.pending_render_frames_queue.qsize() > 0
                     else None,
                 ),
             )
-            self.pending_render_frames.put(thread)
+            self.pending_render_frames_queue.put(thread)
             thread.start()
