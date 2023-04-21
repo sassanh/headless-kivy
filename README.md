@@ -12,6 +12,8 @@ This project demonstrates the use of the Kivy framework to create a headless ren
 
 ## Installation
 
+You need to compile and install SDL2 from source with `kmsdrm` backend. Please follow the instructions provided [here](https://kivy.org/doc/stable/installation/installation-rpi.html#raspberry-pi-4-headless-installation-on-raspbian-buster)
+
 To install the required libraries and dependencies, run the following command:
 
 ```sh
@@ -25,6 +27,7 @@ pip install numpy kivy adafruit-circuitpython-rgb-display
 
    ```python
    setup_headless(
+       min_fps=1,
        max_fps=20,
        width=240,
        height=240,
@@ -44,6 +47,48 @@ pip install numpy kivy adafruit-circuitpython-rgb-display
    ```
 
 1. Run the Kivy app as you normally would.
+
+Checkout [demo.py](./demo.py) to see a sample implementation.
+
+## Parameters
+
+These parameters can be set to control the behavior of headless kivy pi:
+
+### `min_fps`
+
+Minimum frames per second for when the Kivy application is idle.
+
+### `max_fps`
+
+Maximum frames per second for the Kivy application.
+
+### `width`
+
+The width of the display in pixels.
+
+### `height`
+
+The height of the display in pixels.
+
+### `baudrate`
+
+The baud rate for the display connection.
+
+### `debug_mode`
+
+If set to True, the application will print debug information, including FPS.
+
+### `display_class`
+
+The display class to use (default is ST7789).
+
+### `double_buffering`
+
+Is set to `True`, it will let Kivy generate the next frame while sending the last frame to the display.
+
+### `synchronous_clock`
+
+If set to True, Kivy will wait for the LCD before rendering next frames. This will cause Headless to skip frames if they are rendered before the LCD has finished displaying the previous frames. If set to False, frames will be rendered asynchronously, letting Kivy render frames regardless of display being able to catch up or not at the expense of possible frame skipping.
 
 ## Important Note
 
