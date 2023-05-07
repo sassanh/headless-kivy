@@ -8,8 +8,12 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 numpy = "^1.24.2"
-kivy = "^2.1.0"
 adafruit-circuitpython-rgb-display = "^3.11.0"
+kivy = "2.2.0rc1"
+
+[tool.poetry.group.development.dependencies]
+watchdog = "^3.0.0"
+screeninfo = "^0.8.1"
 
 [build-system]
 requires = ["poetry-core"]

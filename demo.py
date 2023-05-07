@@ -1,6 +1,7 @@
 import os
 
 from headless import Headless, setup_headless
+from logger import logger
 
 os.environ["KIVY_METRICS_DENSITY"] = "1"
 os.environ["KIVY_NO_CONFIG"] = "1"
@@ -14,9 +15,7 @@ from kivy.clock import Clock  # noqa
 from kivy.factory import Factory  # noqa
 from kivy.uix.floatlayout import FloatLayout  # noqa
 
-kivy.require("2.0.0")
-
-setup_headless(debug_mode=True)
+setup_headless()
 
 
 class FboFloatLayout(FloatLayout, Headless):
@@ -24,24 +23,17 @@ class FboFloatLayout(FloatLayout, Headless):
 
 
 class ScreenLayerApp(App):
-    @property
-    def fps(self):
-        return f"FPS: {Clock.get_fps():.1f}"
-
     def animate(self, *_):
-        print(self.fps)
-        self.button.text = self.fps
-        if self.button.pos[0] == 0:
-            Animation(x=self.float_layout.width - self.button.width, duration=3).start(
-                self.button
-            )
-        else:
-            Animation(x=0, duration=3).start(self.button)
+        self.button.x = 0
+        logger.debug("Animation started")
+        Animation(x=self.float_layout.width - self.button.width, duration=3).start(
+            self.button
+        )
 
     def build(self):
         self.float_layout = FboFloatLayout()
 
-        self.button = Factory.Button(text=self.fps, size_hint=(None, None))
+        self.button = Factory.Button(size_hint=(None, None))
         self.float_layout.add_widget(self.button)
 
         def anim_btn(*_):
@@ -54,7 +46,8 @@ class ScreenLayerApp(App):
 
         self.button.bind(on_press=anim_btn)
 
-        Clock.schedule_interval(self.animate, 5)
+        self.animate()
+        Clock.schedule_interval(self.animate, 6)
 
         return self.float_layout
 
