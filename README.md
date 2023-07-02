@@ -39,10 +39,10 @@ pip install numpy kivy adafruit-circuitpython-rgb-display
    )
    ```
 
-1. Inherit the Headless class for the root widget of your Kivy application. For example:
+1. Inherit the `HeadlessWidget` class for the root widget of your Kivy application. For example:
 
    ```python
-   class FboFloatLayout(FloatLayout, Headless):
+   class FboFloatLayout(FloatLayout, HeadlessWidget):
        pass
    ```
 

@@ -4,20 +4,31 @@ version = "0.1.0"
 description = ""
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 readme = "README.md"
+packages = [
+    { include = "src" },
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 numpy = "^1.24.2"
 adafruit-circuitpython-rgb-display = "^3.11.0"
-kivy = "2.2.0rc1"
+kivy = "^2.2.1"
+adafruit-circuitpython-aw9523 = "^1.1.7"
 
 [tool.poetry.group.development.dependencies]
 watchdog = "^3.0.0"
 screeninfo = "^0.8.1"
 
+
+[tool.poetry.group.macos.dependencies]
+fake-rpi = "^0.7.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+demo = "src.demo.demo:main"
 
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.

@@ -9,11 +9,12 @@ from typing import Type
 import kivy
 from adafruit_rgb_display.rgb import DisplaySPI, numpy
 from kivy.app import ObjectProperty, Widget
-from kivy.base import Clock
+from kivy.clock import Clock
 from kivy.config import Config
-from kivy.graphics import Canvas, ClearBuffers, ClearColor, Color, Fbo, Rectangle
+from kivy.graphics import (Canvas, ClearBuffers, ClearColor, Color, Fbo,
+                           Rectangle)
 
-from logger import add_file_handler, add_stdout_handler, logger
+from src.headless.logger import add_file_handler, add_stdout_handler, logger
 
 kivy.require("2.2.0")
 
@@ -94,13 +95,13 @@ being able to catch up or not at the expense of possible frame skipping.
 bytes per pixel={BYTES_PER_PIXEL} x bits per byte={BITS_PER_BYTE}))"""
         )
 
-    Headless.min_fps = min_fps
-    Headless.max_fps = max_fps
-    Headless.width = width
-    Headless.height = height
-    Headless.debug_mode = debug_mode
-    Headless.double_buffering = double_buffering
-    Headless.synchronous_clock = synchronous_clock
+    HeadlessWidget.min_fps = min_fps
+    HeadlessWidget.max_fps = max_fps
+    HeadlessWidget.width = width
+    HeadlessWidget.height = height
+    HeadlessWidget.debug_mode = debug_mode
+    HeadlessWidget.double_buffering = double_buffering
+    HeadlessWidget.synchronous_clock = synchronous_clock
 
     Config.set("kivy", "kivy_clock", "default")
     Config.set("graphics", "fbo", "force-hardware")
@@ -144,7 +145,7 @@ bytes per pixel={BYTES_PER_PIXEL} x bits per byte={BITS_PER_BYTE}))"""
 
 
 # Headless Kivy widget class rendering on SPI display
-class Headless(Widget):
+class HeadlessWidget(Widget):
     texture = ObjectProperty(None, allownone=True)
 
     min_fps: int
@@ -162,24 +163,25 @@ class Headless(Widget):
     last_hash: int
     fps_control_queue: Semaphore
     fps: int
-    latest_release_thread: Thread
+    latest_release_thread: Thread | None
 
     def __init__(self, **kwargs):
-        if Headless.width is None or Headless.height is None:
+        if HeadlessWidget.width is None or HeadlessWidget.height is None:
             raise Exception(
                 '"setup_headless" should be called before instantiating "Headless"'
             )
-        super(Headless, self).__init__(**kwargs)
+        super(HeadlessWidget, self).__init__(**kwargs)
         if self.debug_mode:
             self.last_second = int(time.time())
             self.rendered_frames = 0
             self.skipped_frames = 0
 
-        self.pending_render_threads = Queue(2 if Headless.double_buffering else 1)
+        self.pending_render_threads = Queue(2 if HeadlessWidget.double_buffering else 1)
         self.last_hash = 0
         self.last_change = time.time()
         self.fps_control_queue = Semaphore(1)
         self.fps = self.max_fps
+        self.latest_release_thread = None
 
         self.canvas = Canvas()
         with self.canvas:
@@ -201,14 +203,14 @@ class Headless(Widget):
     def add_widget(self, *args, **kwargs):
         canvas = self.canvas
         self.canvas = self.fbo
-        ret = super(Headless, self).add_widget(*args, **kwargs)
+        ret = super(HeadlessWidget, self).add_widget(*args, **kwargs)
         self.canvas = canvas
         return ret
 
     def remove_widget(self, *args, **kwargs):
         canvas = self.canvas
         self.canvas = self.fbo
-        super(Headless, self).remove_widget(*args, **kwargs)
+        super(HeadlessWidget, self).remove_widget(*args, **kwargs)
         self.canvas = canvas
 
     def on_size(self, _, value):
@@ -225,21 +227,55 @@ class Headless(Widget):
     def on_alpha(self, _, value):
         self.fbo_color.rgba = (1, 1, 1, value)
 
-    def release_frame_task(self):
+    def release_task(self):
         time.sleep(1 / self.fps)
         self.fps_control_queue.release()
 
     def release_frame(self):
-        self.latest_release_thread = Thread(target=self.release_frame_task)
+        self.latest_release_thread = Thread(target=self.release_task)
         self.latest_release_thread.start()
 
     def reset_fps_control_queue(self):
         def task():
             self.fps_control_queue.release()
-            self.latest_release_thread.join()
+            if self.latest_release_thread:
+                self.latest_release_thread.join()
             self.fps_control_queue.acquire()
 
         Thread(target=task).start()
+
+    def activate_high_fps_mode(self):
+        logger.debug("Activating high fps mode, setting FPS to `max_fps`")
+        self.fps = self.max_fps
+        self.reset_fps_control_queue()
+
+    def _activate_low_fps_mode(self, *_):
+        logger.debug("Activating low fps mode, dropping FPS to `min_fps`")
+        self.fps = self.min_fps
+
+    def activate_low_fps_mode(self):
+        Clock.schedule_once(self._activate_low_fps_mode)
+
+    def render_task(self, data, data_hash, last_render_thread):
+        logger.debug(f'Rendering frame with hash "{data_hash}"')
+
+        color = (
+            ((data[:, :, 0] & 0xF8) << 8)
+            | ((data[:, :, 1] & 0xFC) << 3)
+            | (data[:, :, 2] >> 3)
+        )
+        data = bytes(
+            numpy.dstack(((color >> 8) & 0xFF, color & 0xFF)).flatten().tolist()
+        )
+
+        # Wait for the last render thread to finish
+        if last_render_thread:
+            last_render_thread.join()
+
+        # Only render when running on a Raspberry Pi
+        if IS_RPI:
+            display._block(0, 0, HeadlessWidget.width - 1,
+                           HeadlessWidget.height - 1, data)
 
     def render_on_display(self, *_):
         if self.debug_mode:
@@ -266,9 +302,9 @@ class Headless(Widget):
         # If `synchronous_clock` is False, skip frames if there are more than one
         # pending render in case `double_buffering` is enabled, or if there are ANY
         # pending render in case `double_buffering` is disabled.
-        if not Headless.synchronous_clock:
+        if not HeadlessWidget.synchronous_clock:
             if self.pending_render_threads.qsize() > (
-                1 if Headless.double_buffering else 0
+                1 if HeadlessWidget.double_buffering else 0
             ):
                 self.skipped_frames += 1
                 return
@@ -276,55 +312,33 @@ class Headless(Widget):
         if self.debug_mode:
             self.rendered_frames += 1
 
-        def render_task(data, last_render_thread):
-            logger.debug(f'Rendering frame with hash "{data_hash}"')
-
-            color = (
-                ((data[:, :, 0] & 0xF8) << 8)
-                | ((data[:, :, 1] & 0xFC) << 3)
-                | (data[:, :, 2] >> 3)
-            )
-            data = bytes(
-                numpy.dstack(((color >> 8) & 0xFF, color & 0xFF)).flatten().tolist()
-            )
-
-            # Wait for the last render thread to finish
-            if last_render_thread:
-                last_render_thread.join()
-
-            # Only render when running on a Raspberry Pi
-            if IS_RPI:
-                display._block(0, 0, Headless.width - 1, Headless.height - 1, data)
-
         data = numpy.frombuffer(self.texture.pixels, dtype=numpy.uint8).reshape(
-            Headless.width, Headless.height, -1
+            HeadlessWidget.width, HeadlessWidget.height, -1
         )
         data = data[:, :, :3].astype(numpy.uint16)
         data_hash = hash(data.data.tobytes())
         if data_hash == self.last_hash:
             # Only drop FPS when the screen has not changed for at least one second
             if time.time() - self.last_change > 1 and self.fps != self.min_fps:
-                logger.debug(
-                    """Frame content has not changed for 1 second, dropping FPS to \
-`min_fps`"""
-                )
-                self.fps = self.min_fps
+                logger.debug("Frame content has not changed for 1 second")
+                self.activate_low_fps_mode()
 
-            # Considering the content has not changed, this frame can safely be considered rendered
+            # Considering the content has not changed, this frame can safely be
+            # considered rendered
             return
         else:
             self.last_change = time.time()
             self.last_hash = data_hash
             if self.fps != self.max_fps:
-                logger.debug("Frame content has changed, setting FPS to `max_fps`")
-                self.fps = self.max_fps
-                self.reset_fps_control_queue()
+                logger.debug("Frame content has changed")
+                self.activate_high_fps_mode()
 
         # Render the current frame on the display asynchronously
         thread = Thread(
-            target=render_task,
+            target=self.render_task,
             args=(
                 data,
+                data_hash,
                 self.pending_render_threads.get()
                 if self.pending_render_threads.qsize() > 0
                 else None,
