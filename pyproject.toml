@@ -8,20 +8,43 @@ packages = [
     { include = "src" },
 ]
 
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "piwheels"
+url = "https://www.piwheels.org/simple/"
+priority = "supplemental"
+
+
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 numpy = "^1.24.2"
 adafruit-circuitpython-rgb-display = "^3.11.0"
-kivy = "^2.2.1"
 adafruit-circuitpython-aw9523 = "^1.1.7"
+kivy = [
+    {version="^2.2.1", markers="platform_machine!='aarch64'", source="pypi"},
+    {version="^2.2.1", markers="platform_machine=='aarch64'", source="piwheels"}
+]
+
+
+[tool.poetry.group.development]
+optional = true
 
 [tool.poetry.group.development.dependencies]
+fake-rpi = "^0.7.1"
 watchdog = "^3.0.0"
 screeninfo = "^0.8.1"
 
 
-[tool.poetry.group.macos.dependencies]
-fake-rpi = "^0.7.1"
+[tool.poetry.group.rpi]
+optional = true
+
+[tool.poetry.group.rpi.dependencies]
+rpi-gpio = "^0.7.1"
+
 
 [build-system]
 requires = ["poetry-core"]

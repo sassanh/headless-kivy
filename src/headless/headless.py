@@ -16,7 +16,7 @@ from kivy.graphics import (Canvas, ClearBuffers, ClearColor, Color, Fbo,
 
 from src.headless.logger import add_file_handler, add_stdout_handler, logger
 
-kivy.require("2.2.0")
+kivy.require("2.2.1")
 
 # Check if the code is running on a Raspberry Pi
 IS_RPI = Path("/etc/rpi-issue").exists()
@@ -163,7 +163,7 @@ class HeadlessWidget(Widget):
     last_hash: int
     fps_control_queue: Semaphore
     fps: int
-    latest_release_thread: Thread | None
+    latest_release_thread: Thread
 
     def __init__(self, **kwargs):
         if HeadlessWidget.width is None or HeadlessWidget.height is None:

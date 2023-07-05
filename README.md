@@ -6,24 +6,44 @@ This project demonstrates the use of the Kivy framework to create a headless ren
 
 - Raspberry Pi 4
 - SPI Display (tested with ST7789 module)
-- numpy
-- Kivy (version 2.0.0 or later)
-- Adafruit RGB Display library
+- [Poetry](https://python-poetry.org/)
 
-## Installation
+## Dependencies
 
 You need to compile and install SDL2 from source with `kmsdrm` backend. Please follow the instructions provided [here](https://kivy.org/doc/stable/installation/installation-rpi.html#raspberry-pi-4-headless-installation-on-raspbian-buster)
 
-To install the required libraries and dependencies, run the following command:
+### Poetry
+
+To install poetry in Raspbian you need to follow these instructions until [this issue](https://github.com/python-poetry/poetry/issues/7645) is resolved:
 
 ```sh
-pip install numpy kivy adafruit-circuitpython-rgb-display
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # Select "2) Customize installation" and set host to "arm-unknown-linux-gnueabihf"
+sudo apt-get install pkg-config libssl-dev
+curl -sSL https://install.python-poetry.org | python3 -
 ```
+
+After having poetry, to install the required dependencies, run the following command:
+
+```sh
+poetry install --with rpi
+```
+
+### Pip
+
+Since installing poetry on Raspberry Pi 4 is a bit tricky at the moment, you may consider this alternative:
+
+1 Create a virtualenv manually
+1 Run:
+
+```sh
+      pip install requirements.txt
+```
+
+`requirements.txt` is provided and kept up to date until the above mentioned issue is resolved.
 
 ## Usage
 
-1. Clone this repository and navigate to the project folder.
-1. Call setup_headless() before inheriting the Headless class for the root widget of your application, and provide the optional parameters as needed. For example:
+1. Call setup_headless() before inheriting the `HeadlessWidget` class for the root widget of your application, and provide the optional parameters as needed. For example:
 
    ```python
    setup_headless(
@@ -48,7 +68,7 @@ pip install numpy kivy adafruit-circuitpython-rgb-display
 
 1. Run the Kivy app as you normally would.
 
-Checkout [demo.py](./demo.py) to see a sample implementation.
+Checkout [demo.py](./src/demo/demo.py) to see a sample implementation.
 
 ## Parameters
 
