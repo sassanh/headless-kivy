@@ -4,7 +4,7 @@ from distutils.util import strtobool
 from pathlib import Path
 from queue import Queue
 from threading import Semaphore, Thread
-from typing import Type
+from typing import Optional, Type
 
 import kivy
 from adafruit_rgb_display.rgb import DisplaySPI, numpy
@@ -37,10 +37,10 @@ BITS_PER_BYTE = 11
 
 def setup_headless(
     min_fps: int = int(os.environ.get("HEADLESS_KIVY_PI_MIN_FPS", "1")),
-    max_fps: int = int(os.environ.get("HEADLESS_KIVY_PI_MAX_FPS", "20")),
+    max_fps: int = int(os.environ.get("HEADLESS_KIVY_PI_MAX_FPS", "30")),
     width: int = int(os.environ.get("HEADLESS_KIVY_PI_WIDTH", "240")),
     height: int = int(os.environ.get("HEADLESS_KIVY_PI_HEIGHT", "240")),
-    baudrate: int = int(os.environ.get("HEADLESS_KIVY_PI_BAUDRATE", "96000000")),
+    baudrate: int = int(os.environ.get("HEADLESS_KIVY_PI_BAUDRATE", "60000000")),
     debug_mode: bool = strtobool(
         os.environ.get("HEADLESS_KIVY_PI_DEBUG", "False" if IS_RPI else "True")
     )
@@ -140,7 +140,7 @@ bytes per pixel={BYTES_PER_PIXEL} x bits per byte={BITS_PER_BYTE}))"""
         monitor = get_monitors()[0]
 
         Window._win.set_always_on_top(True)
-        Window._set_top(0)
+        Window._set_top(200)
         Window._set_left(monitor.width - Window._size[0])
 
 
@@ -163,14 +163,13 @@ class HeadlessWidget(Widget):
     last_hash: int
     fps_control_queue: Semaphore
     fps: int
-    latest_release_thread: Thread
+    latest_release_thread: Optional[Thread]
 
     def __init__(self, **kwargs):
         if HeadlessWidget.width is None or HeadlessWidget.height is None:
             raise Exception(
                 '"setup_headless" should be called before instantiating "Headless"'
             )
-        super(HeadlessWidget, self).__init__(**kwargs)
         if self.debug_mode:
             self.last_second = int(time.time())
             self.rendered_frames = 0
@@ -194,6 +193,8 @@ class HeadlessWidget(Widget):
             ClearBuffers()
 
         self.texture = self.fbo.texture
+
+        super(HeadlessWidget, self).__init__(**kwargs)
 
         self.render_on_display_event = Clock.create_trigger(
             self.render_on_display, 0, True
@@ -278,8 +279,6 @@ class HeadlessWidget(Widget):
                            HeadlessWidget.height - 1, data)
 
     def render_on_display(self, *_):
-        if self.debug_mode:
-            logger.debug(f"FPS: {Clock.get_fps():.1f}")
         # Block if it is rendering more FPS than expected
         self.fps_control_queue.acquire()
         self.release_frame()
@@ -315,7 +314,7 @@ class HeadlessWidget(Widget):
         data = numpy.frombuffer(self.texture.pixels, dtype=numpy.uint8).reshape(
             HeadlessWidget.width, HeadlessWidget.height, -1
         )
-        data = data[:, :, :3].astype(numpy.uint16)
+        data = data[::-1, :, :3].astype(numpy.uint16)
         data_hash = hash(data.data.tobytes())
         if data_hash == self.last_hash:
             # Only drop FPS when the screen has not changed for at least one second

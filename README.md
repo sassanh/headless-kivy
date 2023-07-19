@@ -14,7 +14,7 @@ You need to compile and install SDL2 from source with `kmsdrm` backend. Please f
 
 ### Poetry
 
-To install poetry in Raspbian you need to follow these instructions until [this issue](https://github.com/python-poetry/poetry/issues/7645) is resolved:
+To install poetry in Raspbian you need to follow these instructions to install rust compiler until [this issue](https://github.com/python-poetry/poetry/issues/7645) is resolved:
 
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # Select "2) Customize installation" and set host to "arm-unknown-linux-gnueabihf"
@@ -26,6 +26,12 @@ After having poetry, to install the required dependencies, run the following com
 
 ```sh
 poetry install --with rpi
+```
+
+Also be aware of [this issue](https://github.com/python-poetry/poetry/issues/1917) and until it is resolved you can manually disable keyring by prefix your poetry commands like this:
+
+```sh
+PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install --with rpi
 ```
 
 ### Pip
@@ -43,15 +49,15 @@ Since installing poetry on Raspberry Pi 4 is a bit tricky at the moment, you may
 
 ## Usage
 
-1. Call setup_headless() before inheriting the `HeadlessWidget` class for the root widget of your application, and provide the optional parameters as needed. For example:
+1. Call setup_headless() before inheriting the `HeadlessWidget` class for the root widget of your application, and provide the optional parameters as needed. For example (these are all default values, you only need to provide the ones you want to change):
 
    ```python
    setup_headless(
        min_fps=1,
-       max_fps=20,
+       max_fps=30,
        width=240,
        height=240,
-       baudrate=96000000,
+       baudrate=60000000,
        debug_mode=False,
        display_class=ST7789,
        double_buffering=True,
