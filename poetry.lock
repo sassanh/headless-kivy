@@ -2,12 +2,12 @@
 
 [[package]]
 name = "adafruit-blinka"
-version = "8.20.0"
+version = "8.20.1"
 description = "CircuitPython APIs for non-CircuitPython versions of Python such as CPython on Linux and MicroPython."
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "Adafruit_Blinka-8.20.0-py3-none-any.whl", hash = "sha256:936f1c2ea946ad6cb2a0991fec09d541a12311bed22315ef9e6b6e0a4ab8864b"},
+    {file = "Adafruit_Blinka-8.20.1-py3-none-any.whl", hash = "sha256:d42a2ef057af554bd9815e6ea756699178f0ce0734ae29d1946cc329b78ebd1c"},
 ]
 
 [package.dependencies]
@@ -86,12 +86,12 @@ reference = "piwheels"
 
 [[package]]
 name = "adafruit-circuitpython-requests"
-version = "2.0.0"
+version = "2.0.1"
 description = "A requests-like library for web interfacing"
 optional = false
 python-versions = "*"
 files = [
-    {file = "adafruit_circuitpython_requests-2.0.0-py3-none-any.whl", hash = "sha256:ce3db3f640da1423f60c759ea03f29c6a673f2ecf6efc48f11394897d20ca170"},
+    {file = "adafruit_circuitpython_requests-2.0.1-py3-none-any.whl", hash = "sha256:67f56945d76aa9d45fcffba1c8afe9b2ba163088ff26cc7a1ddf4ee6ae90154b"},
 ]
 
 [package.dependencies]
@@ -144,12 +144,12 @@ reference = "piwheels"
 
 [[package]]
 name = "adafruit-platformdetect"
-version = "3.47.0"
+version = "3.48.0"
 description = "Platform detection for use by libraries like Adafruit-Blinka."
 optional = false
 python-versions = "*"
 files = [
-    {file = "Adafruit_PlatformDetect-3.47.0-py3-none-any.whl", hash = "sha256:a89274850bcb09e14bd3aeb3a346bbb9dac95cc2da02eb9c68c26fb7224ffd2b"},
+    {file = "Adafruit_PlatformDetect-3.48.0-py3-none-any.whl", hash = "sha256:90555d883c05e3dc347d65fd2994f4f2d096672b97383daf8ab4816fd9cfaf1a"},
 ]
 
 [package.source]
@@ -174,12 +174,12 @@ reference = "piwheels"
 
 [[package]]
 name = "certifi"
-version = "2023.5.7"
+version = "2023.7.22"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2023.5.7-py3-none-any.whl", hash = "sha256:a05b7f098e2e533c193db8b624afaec36d486c7fdbf350a9936eb9a00d44d2b7"},
+    {file = "certifi-2023.7.22-py3-none-any.whl", hash = "sha256:4e4d84b05d4572339352afe85f0490367f5b8572b7f8d3f2373dffd642210f2d"},
 ]
 
 [package.source]
@@ -658,12 +658,12 @@ reference = "piwheels"
 
 [[package]]
 name = "urllib3"
-version = "2.0.3"
+version = "2.0.4"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "urllib3-2.0.3-py3-none-any.whl", hash = "sha256:50bcd1e8ea5fc90ce4aae96e845c2f17dfa6f6c18aafd0be35ef704b939024a5"},
+    {file = "urllib3-2.0.4-py3-none-any.whl", hash = "sha256:b256d3c847397b76eca8a1d69f326d7d77a77803a19745b535cd205cd2eca229"},
 ]
 
 [package.extras]
@@ -698,4 +698,4 @@ reference = "piwheels"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "ecbb0af9838dab163314e00faf840bb704ac4f71e0499c036718787f7480e6e1"
+content-hash = "3562a6a4130dafb0b92ca784f7cc626d2b3727f8fbd61fae8c8118e65396b6ad"

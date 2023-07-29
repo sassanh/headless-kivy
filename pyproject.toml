@@ -23,6 +23,8 @@ priority = "primary"
 python = ">=3.9,<3.12"
 numpy = "^1.24.2"
 kivy = "^2.2.1"
+typing-extensions = "^4.7.1"
+adafruit-circuitpython-rgb-display = "^3.11.0"
 
 
 [tool.poetry.group.development]
@@ -39,7 +41,6 @@ optional = true
 
 [tool.poetry.group.rpi.dependencies]
 rpi-gpio = "^0.7.1"
-adafruit-circuitpython-rgb-display = "^3.11.0"
 adafruit-circuitpython-aw9523 = "^1.1.7"
 
 
@@ -50,9 +51,13 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 demo = "src.demo.demo:main"
 
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "double"
+
 [tool.ruff]
-# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
-select = ["E", "F"]
+select = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT001", "FBT002", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
 ignore = []
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
