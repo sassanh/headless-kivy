@@ -35,7 +35,7 @@ from kivy.graphics import (
     Fbo,
     Rectangle,
 )
-from typing_extensions import Any, NotRequired, TypedDict, Unpack
+from typing_extensions import Any, NotRequired, TypedDict
 
 from src.headless.logger import add_file_handler, add_stdout_handler, logger
 
@@ -67,58 +67,78 @@ WIDTH = int(os.environ.get('HEADLESS_KIVY_PI_WIDTH', '240'))
 HEIGHT = int(os.environ.get('HEADLESS_KIVY_PI_HEIGHT', '240'))
 BAUDRATE = int(os.environ.get('HEADLESS_KIVY_PI_BAUDRATE', '60000000'))
 DEBUG_MODE = strtobool(
-        os.environ.get('HEADLESS_KIVY_PI_DEBUG', 'False' if IS_RPI else 'True'),
-    ) == 1
+    os.environ.get('HEADLESS_KIVY_PI_DEBUG', 'False' if IS_RPI else 'True'),
+) == 1
 DOUBLE_BUFFERING = strtobool(
-        os.environ.get('HEADLESS_KIVY_PI_DOUBLE_BUFFERING', 'True'),
-    ) == 1
+    os.environ.get('HEADLESS_KIVY_PI_DOUBLE_BUFFERING', 'True'),
+) == 1
 SYNCHRONOUS_CLOCK = strtobool(
-        os.environ.get('HEADLESS_KIVY_PI_SYNCHRONOUS_CLOCK', 'True'),
-    ) == 1
+    os.environ.get('HEADLESS_KIVY_PI_SYNCHRONOUS_CLOCK', 'True'),
+) == 1
+AUTOMATIC_FPS_CONTROL = strtobool(
+    os.environ.get('HEADLESS_KIVY_PI_AUTOMATIC_FPS_CONTROL', 'False'),
+) == 1
 
-class SetupHeadlessArgs(TypedDict):
+
+class SetupHeadlessConfig(TypedDict):
     """Arguments of `setup_headless` function."""
 
     min_fps: NotRequired[int]
+    """Minimum frames per second for when the Kivy application is idle."""
     max_fps: NotRequired[int]
+    """Maximum frames per second for the Kivy application."""
     width: NotRequired[int]
+    """The width of the display in pixels."""
     height: NotRequired[int]
+    """The height of the display in pixels."""
     baudrate: NotRequired[int]
+    """The baud rate for the display connection."""
     debug_mode: NotRequired[bool]
+    """If set to True, the application will consume computational resources to log
+    additional debug information."""
     display_class: NotRequired[type[DisplaySPI]]
+    """The display class to use (default is ST7789)."""
     double_buffering: NotRequired[bool]
+    """Is set to `True`, it will let Kivy generate the next frame while sending the
+    last frame to the display."""
     synchronous_clock: NotRequired[bool]
+    """If set to `True`, Kivy will wait for the LCD before rendering next frames. This
+    will cause Headless to skip frames if they are rendered before the LCD has finished
+    displaying the previous frames. If set to False, frames will be rendered
+    asynchronously, letting Kivy render frames regardless of display being able to catch
+    up or not at the expense of possible frame skipping."""
+    automatic_fps: NotRequired[bool]
+    """If set to `True` fps will adjust automatically."""
 
-def setup_headless(**kwargs: Unpack[SetupHeadlessArgs]) -> None:
+
+def setup_headless(config: SetupHeadlessConfig = None) -> None:
     """Configure the headless mode for the Kivy application.
 
-    :param min_fps: Minimum frames per second for when the Kivy application is idle.
-    :param max_fps: Maximum frames per second for the Kivy application.
-    :param width: The width of the display in pixels.
-    :param height: The height of the display in pixels.
-    :param baudrate: The baud rate for the display connection.
-    :param debug_mode: If set to True, the application will consume computational \
-resources to log additional debug information.
-    :param display_class: The display class to use (default is ST7789).
-    :param double_buffering: Is set to `True`, it will let Kivy generate the next \
-frame while sending the last frame to the display.
-    :param synchronous_clock: If set to True, Kivy will wait for the LCD before \
-rendering next frames. This will cause Headless to skip frames if they are rendered \
-before the LCD has finished displaying the previous frames. If set to False, frames \
-will be rendered asynchronously, letting Kivy render frames regardless of display \
-being able to catch up or not at the expense of possible frame skipping.
+    Arguments:
+    ---------
+    config: `SetupHeadlessConfig`, optional
     """
-    min_fps = kwargs.get('min_fps', MIN_FPS)
-    max_fps = kwargs.get('max_fps', MAX_FPS)
-    width = kwargs.get('width', WIDTH)
-    height = kwargs.get('height', HEIGHT)
-    baudrate = kwargs.get('baudrate', BAUDRATE)
-    debug_mode = kwargs.get('debug_mode', DEBUG_MODE)
-    display_class = kwargs.get('st7789', ST7789)
-    double_buffering = kwargs.get('double_buffering', DOUBLE_BUFFERING)
-    synchronous_clock = kwargs.get('synchronous_clock', SYNCHRONOUS_CLOCK)
+    if config is None:
+        config = {}
 
-    if debug_mode:
+    min_fps = config.get('min_fps', MIN_FPS)
+    max_fps = config.get('max_fps', MAX_FPS)
+    width = config.get('width', WIDTH)
+    height = config.get('height', HEIGHT)
+    baudrate = config.get('baudrate', BAUDRATE)
+    HeadlessWidget.debug_mode = config.get('debug_mode', DEBUG_MODE)
+    display_class = config.get('st7789', ST7789)
+    HeadlessWidget.double_buffering = config.get('double_buffering', DOUBLE_BUFFERING)
+    HeadlessWidget.synchronous_clock = config.get(
+        'synchronous_clock',
+        SYNCHRONOUS_CLOCK,
+    )
+    HeadlessWidget.automatic_fps_control = config.get(
+        'automatic_fps',
+        AUTOMATIC_FPS_CONTROL,
+    )
+
+    if HeadlessWidget.debug_mode:
         add_stdout_handler()
         add_file_handler()
 
@@ -141,9 +161,6 @@ pixel={BYTES_PER_PIXEL} x bits per byte={BITS_PER_BYTE}))"""
     HeadlessWidget.max_fps = max_fps
     HeadlessWidget.width = width
     HeadlessWidget.height = height
-    HeadlessWidget.debug_mode = debug_mode
-    HeadlessWidget.double_buffering = double_buffering
-    HeadlessWidget.synchronous_clock = synchronous_clock
 
     Config.set('kivy', 'kivy_clock', 'default')
     Config.set('graphics', 'fbo', 'force-hardware')
@@ -198,6 +215,7 @@ class HeadlessWidget(Widget):
     debug_mode: bool
     double_buffering: bool
     synchronous_clock: bool
+    automatic_fps_control: bool
 
     last_second: int
     rendered_frames: int
@@ -295,7 +313,6 @@ class HeadlessWidget(Widget):
         """Update alpha value of `fbo_rect` when widget's alpha value changes."""
         self.fbo_color.rgba = (1, 1, 1, value)
 
-
     def release_frame(self: HeadlessWidget) -> None:
         """Schedule dequeuing `fps_control_queue` to allow rendering the next frame.
 
@@ -327,12 +344,12 @@ class HeadlessWidget(Widget):
 
     def activate_high_fps_mode(self: HeadlessWidget) -> None:
         """Increase fps to `max_fps`."""
-        logger.debug('Activating high fps mode, setting FPS to `max_fps`')
+        logger.info('Activating high fps mode, setting FPS to `max_fps`')
         self.fps = self.max_fps
         self.reset_fps_control_queue()
 
     def _activate_low_fps_mode(self: HeadlessWidget, *_: Any) -> None:  # noqa: ANN401
-        logger.debug('Activating low fps mode, dropping FPS to `min_fps`')
+        logger.info('Activating low fps mode, dropping FPS to `min_fps`')
         self.fps = self.min_fps
 
     def activate_low_fps_mode(self: HeadlessWidget) -> None:
@@ -392,8 +409,8 @@ class HeadlessWidget(Widget):
         # pending render in case `double_buffering` is enabled, or if there are ANY
         # pending render in case `double_buffering` is disabled.
         if not HeadlessWidget.synchronous_clock and \
-            self.pending_render_threads.qsize() > \
-            (1 if HeadlessWidget.double_buffering else 0):
+                self.pending_render_threads.qsize() > \
+                (1 if HeadlessWidget.double_buffering else 0):
             self.skipped_frames += 1
             return
 
@@ -408,7 +425,7 @@ class HeadlessWidget(Widget):
         data_hash = hash(data.data.tobytes())
         if data_hash == self.last_hash:
             # Only drop FPS when the screen has not changed for at least one second
-            if time.time() - self.last_change > 1 and self.fps != self.min_fps:
+            if self.automatic_fps_control and time.time() - self.last_change > 1 and self.fps != self.min_fps:
                 logger.debug('Frame content has not changed for 1 second')
                 self.activate_low_fps_mode()
 
@@ -417,7 +434,7 @@ class HeadlessWidget(Widget):
 
         self.last_change = time.time()
         self.last_hash = data_hash
-        if self.fps != self.max_fps:
+        if self.automatic_fps_control and self.fps != self.max_fps:
             logger.debug('Frame content has changed')
             self.activate_high_fps_mode()
 
