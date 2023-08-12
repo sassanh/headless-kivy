@@ -37,7 +37,7 @@ from kivy.graphics import (
 )
 from typing_extensions import Any, NotRequired, TypedDict
 
-from src.headless.logger import add_file_handler, add_stdout_handler, logger
+from .logger import add_file_handler, add_stdout_handler, logger
 
 if TYPE_CHECKING:
     from kivy.graphics.texture import Texture
@@ -51,7 +51,8 @@ ST7789: type[DisplaySPI]
 if IS_RPI:
     import board
     import digitalio
-    from adafruit_rgb_display.st7789 import ST7789
+    from adafruit_rgb_display.st7789 import ST7789 as _ST7789
+    ST7789 = _ST7789
 else:
     ST7789 = type('ST7789', (DisplaySPI,), {})
 
@@ -111,7 +112,7 @@ class SetupHeadlessConfig(TypedDict):
     """If set to `True` fps will adjust automatically."""
 
 
-def setup_headless(config: SetupHeadlessConfig = None) -> None:
+def setup_headless(config: SetupHeadlessConfig | None = None) -> None:
     """Configure the headless mode for the Kivy application.
 
     Arguments:
@@ -127,8 +128,9 @@ def setup_headless(config: SetupHeadlessConfig = None) -> None:
     height = config.get('height', HEIGHT)
     baudrate = config.get('baudrate', BAUDRATE)
     HeadlessWidget.debug_mode = config.get('debug_mode', DEBUG_MODE)
-    display_class = config.get('st7789', ST7789)
-    HeadlessWidget.double_buffering = config.get('double_buffering', DOUBLE_BUFFERING)
+    display_class: DisplaySPI = config.get('st7789', ST7789)
+    HeadlessWidget.double_buffering = config.get(
+        'double_buffering', DOUBLE_BUFFERING)
     HeadlessWidget.synchronous_clock = config.get(
         'synchronous_clock',
         SYNCHRONOUS_CLOCK,
@@ -239,7 +241,8 @@ class HeadlessWidget(Widget):
             self.rendered_frames = 0
             self.skipped_frames = 0
 
-        self.pending_render_threads = Queue(2 if HeadlessWidget.double_buffering else 1)
+        self.pending_render_threads = Queue(
+            2 if HeadlessWidget.double_buffering else 1)
         self.last_hash = 0
         self.last_change = time.time()
         self.fps_control_queue = Semaphore(1)
@@ -425,7 +428,8 @@ class HeadlessWidget(Widget):
         data_hash = hash(data.data.tobytes())
         if data_hash == self.last_hash:
             # Only drop FPS when the screen has not changed for at least one second
-            if self.automatic_fps_control and time.time() - self.last_change > 1 and self.fps != self.min_fps:
+            if (self.automatic_fps_control and
+                    time.time() - self.last_change > 1 and self.fps != self.min_fps):
                 logger.debug('Frame content has not changed for 1 second')
                 self.activate_low_fps_mode()
 

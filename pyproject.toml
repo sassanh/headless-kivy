@@ -1,12 +1,11 @@
 [tool.poetry]
-name = "headless-kivy"
-version = "0.1.0"
+name = "headless-kivy-pi"
+version = "0.2.0"
 description = ""
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
+license = "MIT"
 readme = "README.md"
-packages = [
-    { include = "src" },
-]
+packages = [{ include = "headless_kivy_pi" }]
 
 
 [[tool.poetry.source]]
@@ -26,30 +25,17 @@ kivy = "^2.2.1"
 typing-extensions = "^4.7.1"
 adafruit-circuitpython-rgb-display = "^3.11.0"
 
+rpi-gpio = { version = "^0.7.1", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
+adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
 
-[tool.poetry.group.development]
-optional = true
-
-[tool.poetry.group.development.dependencies]
-fake-rpi = "^0.7.1"
-watchdog = "^3.0.0"
-screeninfo = "^0.8.1"
-
-
-[tool.poetry.group.rpi]
-optional = true
-
-[tool.poetry.group.rpi.dependencies]
-rpi-gpio = "^0.7.1"
-adafruit-circuitpython-aw9523 = "^1.1.7"
+fake-rpi = { version = "^0.7.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
+watchdog = { version = "^3.0.0", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
+screeninfo = { version = "^0.8.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-demo = "src.demo.demo:main"
 
 [tool.ruff.flake8-quotes]
 docstring-quotes = "double"
@@ -57,9 +43,100 @@ inline-quotes = "single"
 multiline-quotes = "double"
 
 [tool.ruff]
-select = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT001", "FBT002", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+select = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "I",
+  "N",
+  "Q",
+  "S",
+  "T",
+  "W",
+  "ANN",
+  "ARG",
+  "BLE",
+  "COM",
+  "DJ",
+  "DTZ",
+  "EM",
+  "ERA",
+  "EXE",
+  "FBT001",
+  "FBT002",
+  "ICN",
+  "INP",
+  "ISC",
+  "NPY",
+  "PD",
+  "PGH",
+  "PIE",
+  "PL",
+  "PT",
+  "PTH",
+  "PYI",
+  "RET",
+  "RSE",
+  "RUF",
+  "SIM",
+  "SLF",
+  "TCH",
+  "TID",
+  "TRY",
+  "UP",
+  "YTT",
+]
 ignore = []
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+fixable = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "I",
+  "N",
+  "Q",
+  "S",
+  "T",
+  "W",
+  "ANN",
+  "ARG",
+  "BLE",
+  "COM",
+  "DJ",
+  "DTZ",
+  "EM",
+  "ERA",
+  "EXE",
+  "FBT",
+  "ICN",
+  "INP",
+  "ISC",
+  "NPY",
+  "PD",
+  "PGH",
+  "PIE",
+  "PL",
+  "PT",
+  "PTH",
+  "PYI",
+  "RET",
+  "RSE",
+  "RUF",
+  "SIM",
+  "SLF",
+  "TCH",
+  "TID",
+  "TRY",
+  "UP",
+  "YTT",
+]
 unfixable = []

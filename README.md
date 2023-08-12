@@ -23,19 +23,13 @@ curl -sSL https://install.python-poetry.org | python3 -
 After having poetry, to install the required dependencies, run the following command:
 
 ```sh
-poetry install --with rpi
+poetry install
 ```
 
 Also be aware of [this issue](https://github.com/python-poetry/poetry/issues/1917) and until it is resolved you can manually disable keyring by prefixing your poetry commands like this:
 
 ```sh
-PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install --with rpi
-```
-
-You can run the demo with poetry using this command:
-
-```sh
-poetry run demo
+PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install
 ```
 
 ## Usage
@@ -65,7 +59,7 @@ poetry run demo
 
 1. Run the Kivy app as you normally would.
 
-Checkout [demo.py](./src/demo/demo.py) to see a sample implementation.
+Checkout [the menu demo](https://github.com/sassanh/headless-menu-pi) to see a sample implementation.
 
 ## Parameters
 
