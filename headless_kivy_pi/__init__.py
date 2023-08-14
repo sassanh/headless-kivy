@@ -23,7 +23,6 @@ from typing import TYPE_CHECKING
 
 import kivy
 import numpy as np
-from adafruit_rgb_display.rgb import DisplaySPI
 from kivy.app import ObjectProperty, Widget
 from kivy.clock import Clock
 from kivy.config import Config
@@ -47,13 +46,17 @@ kivy.require('2.2.1')
 
 # Check if the code is running on a Raspberry Pi
 IS_RPI = Path('/etc/rpi-issue').exists()
-ST7789: type[DisplaySPI]
+DisplaySPI: type
+ST7789: type
 if IS_RPI:
     import board
     import digitalio
+    from adafruit_rgb_display.rgb import DisplaySPI as _DisplaySPI
     from adafruit_rgb_display.st7789 import ST7789 as _ST7789
     ST7789 = _ST7789
+    DisplaySPI = _DisplaySPI
 else:
+    DisplaySPI = type('DisplaySPI', (), {})
     ST7789 = type('ST7789', (DisplaySPI,), {})
 
 # Constants for calculations
