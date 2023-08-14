@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "headless-kivy-pi"
-version = "0.2.0"
+version = "0.2.1"
 description = ""
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "MIT"
@@ -21,11 +21,14 @@ priority = "primary"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
 numpy = "^1.24.2"
-kivy = "^2.2.1"
+kivy = [
+  { version = "^2.2.1", markers = "platform_machine == 'aarch64'", source = 'piwheels' },
+  { version = "^2.2.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' },
+]
 typing-extensions = "^4.7.1"
-adafruit-circuitpython-rgb-display = "^3.11.0"
 
 rpi-gpio = { version = "^0.7.1", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
+adafruit-circuitpython-rgb-display = { version = "^3.11.0", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
 adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
 
 fake-rpi = { version = "^0.7.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
