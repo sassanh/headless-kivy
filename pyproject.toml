@@ -9,18 +9,21 @@ packages = [{ include = "headless_kivy_pi" }]
 
 
 [[tool.poetry.source]]
-name = "PyPI"
+name = "piwheels"
+url = "https://www.piwheels.org/simple/"
 priority = "primary"
 
 [[tool.poetry.source]]
-name = "piwheels"
-url = "https://www.piwheels.org/simple/"
+name = "PyPI"
 priority = "primary"
 
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-numpy = "^1.24.2"
+numpy = [
+  { version = "^1.24.2", markers = "platform_machine == 'aarch64'", source = 'piwheels' },
+  { version = "^1.24.2", markers = "platform_machine != 'aarch64'", source = 'PyPI' },
+]
 kivy = [
   { version = "^2.2.1", markers = "platform_machine == 'aarch64'", source = 'piwheels' },
   { version = "^2.2.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' },
@@ -34,6 +37,7 @@ adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machin
 fake-rpi = { version = "^0.7.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
 watchdog = { version = "^3.0.0", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
 screeninfo = { version = "^0.8.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
+cython = { version = "^3.0.0", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
 
 
 [build-system]
