@@ -6,30 +6,19 @@ This project demonstrates the use of the Kivy framework to create a headless ren
 
 - Raspberry Pi 4
 - SPI Display (tested with ST7789 module)
-- [Poetry](https://python-poetry.org/)
-
-## Dependencies
+- SDL2 with `kmsdrm` backend
 
 You need to compile and install SDL2 from source with `kmsdrm` backend. Please follow the instructions provided [here](https://kivy.org/doc/stable/installation/installation-rpi.html#raspberry-pi-4-headless-installation-on-raspbian-buster)
 
-To install poetry in Raspbian you need to follow these instructions to install rust compiler, this is temporary until [this issue](https://github.com/python-poetry/poetry/issues/7645) is resolved:
+## Installation
+
+You can install it using this handle: headless-kivy-pi@git+<https://github.com/sassanh/headless-kivy-pi.git#subdirectory=headless-kivy-pi>
 
 ```sh
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-sudo apt-get install pkg-config libssl-dev
-curl -sSL https://install.python-poetry.org | python3 -
-```
-
-After having poetry, to install the required dependencies, run the following command:
-
-```sh
-poetry install
-```
-
-Also be aware of [this issue](https://github.com/python-poetry/poetry/issues/1917) and until it is resolved you can manually disable keyring by prefixing your poetry commands like this:
-
-```sh
-PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install
+# pip:
+pip install headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git#subdirectory=headless-kivy-pi
+# poetry:
+poetry add headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git#subdirectory=headless-kivy-pi
 ```
 
 ## Usage
@@ -61,45 +50,69 @@ PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install
 
 Checkout [the menu demo](https://github.com/sassanh/headless-menu-pi) to see a sample implementation.
 
-## Parameters
+### Parameters
 
 These parameters can be set to control the behavior of headless kivy pi:
 
-### `min_fps`
+#### `min_fps`
 
 Minimum frames per second for when the Kivy application is idle.
 
-### `max_fps`
+#### `max_fps`
 
 Maximum frames per second for the Kivy application.
 
-### `width`
+#### `width`
 
 The width of the display in pixels.
 
-### `height`
+#### `height`
 
 The height of the display in pixels.
 
-### `baudrate`
+#### `baudrate`
 
 The baud rate for the display connection.
 
-### `debug_mode`
+#### `debug_mode`
 
 If set to True, the application will print debug information, including FPS.
 
-### `display_class`
+#### `display_class`
 
 The display class to use (default is ST7789).
 
-### `double_buffering`
+#### `double_buffering`
 
 Is set to `True`, it will let Kivy generate the next frame while sending the last frame to the display.
 
-### `synchronous_clock`
+#### `synchronous_clock`
 
 If set to True, Kivy will wait for the LCD before rendering next frames. This will cause Headless to skip frames if they are rendered before the LCD has finished displaying the previous frames. If set to False, frames will be rendered asynchronously, letting Kivy render frames regardless of display being able to catch up or not at the expense of possible frame skipping.
+
+## Contribution
+
+You need to have [Poetry](https://python-poetry.org/) installed on your machine.
+
+To install poetry in Raspbian you need to follow these instructions to install rust compiler, this is temporary until [this issue](https://github.com/python-poetry/poetry/issues/7645) is resolved:
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+sudo apt-get install pkg-config libssl-dev
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+After having poetry, to install the required dependencies, run the following command:
+
+```sh
+poetry install
+```
+
+Also be aware of [this issue](https://github.com/python-poetry/poetry/issues/1917) and until it is resolved you can manually disable keyring by prefixing your poetry commands like this:
+
+```sh
+PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install
+```
 
 ## Important Note
 

@@ -19,7 +19,7 @@ priority = "primary"
 
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
+python = "^3.9"
 numpy = [
   { version = "^1.24.2", markers = "platform_machine == 'aarch64'", source = 'piwheels' },
   { version = "^1.24.2", markers = "platform_machine != 'aarch64'", source = 'PyPI' },
