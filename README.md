@@ -107,4 +107,4 @@ This project has only been tested with the ST7789 SPI display module. Other disp
 
 ## License
 
-This project is released under the MIT License.
+This project is released under the Apache-2.0 License.
