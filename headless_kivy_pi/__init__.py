@@ -227,9 +227,9 @@ class HeadlessWidget(Widget):
     skipped_frames: int
     pending_render_threads: Queue[Thread]
     last_hash: int
-    fps_control_queue: Semaphore
+    fps_control_queue = Semaphore(1)
     fps: int
-    latest_release_thread: Thread | None
+    latest_release_thread: Thread | None = None
 
     fbo: Fbo
     fbo_rect: Rectangle
@@ -248,9 +248,7 @@ class HeadlessWidget(Widget):
             2 if HeadlessWidget.double_buffering else 1)
         self.last_hash = 0
         self.last_change = time.time()
-        self.fps_control_queue = Semaphore(1)
         self.fps = self.max_fps
-        self.latest_release_thread = None
 
         self.canvas = Canvas()
         with self.canvas:
@@ -329,38 +327,42 @@ class HeadlessWidget(Widget):
 
         def release_task() -> None:
             time.sleep(1 / self.fps)
-            self.fps_control_queue.release()
+            type(self).fps_control_queue.release()
 
         self.latest_release_thread = Thread(target=release_task)
         self.latest_release_thread.start()
 
-    def reset_fps_control_queue(self: HeadlessWidget) -> None:
+    @classmethod
+    def reset_fps_control_queue(cls: type[HeadlessWidget]) -> None:
         """Dequeue `fps_control_queue` forcfully to render the next frame.
 
         It is required in case `release_task` is waiting for the next frame based on
         previous fps and now fps is increased and we don't want to wait that long.
         """
         def task() -> None:
-            self.fps_control_queue.release()
-            if self.latest_release_thread:
-                self.latest_release_thread.join()
-            self.fps_control_queue.acquire()
+            cls.fps_control_queue.release()
+            if cls.latest_release_thread:
+                cls.latest_release_thread.join()
+            cls.fps_control_queue.acquire()
 
         Thread(target=task).start()
 
-    def activate_high_fps_mode(self: HeadlessWidget) -> None:
+    @classmethod
+    def activate_high_fps_mode(cls: type[HeadlessWidget]) -> None:
         """Increase fps to `max_fps`."""
         logger.info('Activating high fps mode, setting FPS to `max_fps`')
-        self.fps = self.max_fps
-        self.reset_fps_control_queue()
+        cls.fps = cls.max_fps
+        cls.reset_fps_control_queue()
 
-    def _activate_low_fps_mode(self: HeadlessWidget, *_: Any) -> None:  # noqa: ANN401
+    @classmethod
+    def _activate_low_fps_mode(cls: type[HeadlessWidget], *_: Any) -> None:
         logger.info('Activating low fps mode, dropping FPS to `min_fps`')
-        self.fps = self.min_fps
+        cls.fps = cls.min_fps
 
-    def activate_low_fps_mode(self: HeadlessWidget) -> None:
+    @classmethod
+    def activate_low_fps_mode(cls: type[HeadlessWidget]) -> None:
         """Drop fps to `min_fps`."""
-        Clock.schedule_once(self._activate_low_fps_mode)
+        Clock.schedule_once(cls._activate_low_fps_mode)
 
     def transfer_to_display(
         self: HeadlessWidget,
@@ -393,7 +395,7 @@ class HeadlessWidget(Widget):
     def render_on_display(self: HeadlessWidget, *_: Any) -> None:  # noqa: ANN401
         """Render the widget on display connected to the SPI controller."""
         # Block if it is rendering more FPS than expected
-        self.fps_control_queue.acquire()
+        type(self).fps_control_queue.acquire()
         self.release_frame()
 
         # Log the number of skipped and rendered frames in the last second

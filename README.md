@@ -12,13 +12,13 @@ You need to compile and install SDL2 from source with `kmsdrm` backend. Please f
 
 ## Installation
 
-You can install it using this handle: headless-kivy-pi@git+<https://github.com/sassanh/headless-kivy-pi.git#subdirectory=headless-kivy-pi>
+You can install it using this handle: headless-kivy-pi@git+<https://github.com/sassanh/headless-kivy-pi.git>
 
 ```sh
 # pip:
-pip install headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git#subdirectory=headless-kivy-pi
+pip install headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git
 # poetry:
-poetry add headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git#subdirectory=headless-kivy-pi
+poetry add headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git
 ```
 
 ## Usage
