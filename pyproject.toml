@@ -20,21 +20,15 @@ priority = "primary"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-numpy = [
-  { version = "^1.24.2", markers = "platform_machine == 'aarch64'", source = 'piwheels' },
-  { version = "^1.24.2", markers = "platform_machine != 'aarch64'", source = 'PyPI' },
-]
-kivy = [
-  { version = "^2.2.1", markers = "platform_machine == 'aarch64'", source = 'piwheels' },
-  { version = "^2.2.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' },
-]
+numpy = "^1.24.2"
+kivy = "^2.2.1"
 typing-extensions = "^4.7.1"
 
-rpi-gpio = { version = "^0.7.1", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
-adafruit-circuitpython-rgb-display = { version = "^3.11.0", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
-adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
+adafruit-circuitpython-rgb-display = "^3.11.0"
+adafruit-circuitpython-aw9523 = "^1.1.7"
 
-fake-rpi = { version = "^0.7.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
+[tool.poetry.group.dev.dependencies]
+
 watchdog = { version = "^3.0.0", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
 screeninfo = { version = "^0.8.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
 cython = { version = "^3.0.0", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
