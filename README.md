@@ -2,7 +2,7 @@
 
 This project demonstrates the use of the Kivy framework to create a headless renderer for a Raspberry Pi. The renderer is specifically designed for and tested with the ST7789 SPI display, but it should work with other SPI displays as well. The code utilizes the Adafruit RGB Display library to communicate with the display. The renderer is optimized to not update the LCD if nothing has changed in the frame.
 
-## Requirements
+## ⚡️ Requirements
 
 - Raspberry Pi 4
 - SPI Display (tested with ST7789 module)
@@ -10,7 +10,7 @@ This project demonstrates the use of the Kivy framework to create a headless ren
 
 You need to compile and install SDL2 from source with `kmsdrm` backend. Please follow the instructions provided [here](https://kivy.org/doc/stable/installation/installation-rpi.html#raspberry-pi-4-headless-installation-on-raspbian-buster)
 
-## Installation
+## 📦 Installation
 
 You can install it using this handle: headless-kivy-pi@git+<https://github.com/sassanh/headless-kivy-pi.git>
 
@@ -21,7 +21,7 @@ pip install headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git
 poetry add headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git
 ```
 
-## Usage
+## 🚀 Usage
 
 1. Call setup_headless() before inheriting the `HeadlessWidget` class for the root widget of your application, and provide the optional parameters as needed. For example (these are all default values, you only need to provide the ones you want to change):
 
@@ -48,9 +48,9 @@ poetry add headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git
 
 1. Run the Kivy app as you normally would.
 
-Checkout [the menu demo](https://github.com/sassanh/headless-menu-pi) to see a sample implementation.
+Checkout [Ubo GUI](https://github.com/sassanh/ubo-gui) to see a sample implementation.
 
-### Parameters
+### ⚙️ Parameters
 
 These parameters can be set to control the behavior of headless kivy pi:
 
@@ -90,7 +90,7 @@ Is set to `True`, it will let Kivy generate the next frame while sending the las
 
 If set to True, Kivy will wait for the LCD before rendering next frames. This will cause Headless to skip frames if they are rendered before the LCD has finished displaying the previous frames. If set to False, frames will be rendered asynchronously, letting Kivy render frames regardless of display being able to catch up or not at the expense of possible frame skipping.
 
-## Contribution
+## ⚒️ Contribution
 
 You need to have [Poetry](https://python-poetry.org/) installed on your machine.
 
@@ -114,10 +114,10 @@ Also be aware of [this issue](https://github.com/python-poetry/poetry/issues/191
 PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install
 ```
 
-## Important Note
+## ⚠️ Important Note
 
 This project has only been tested with the ST7789 SPI display module. Other display modules might not be compatible or may require changing the parameters or even modifications to the code.
 
-## License
+## 📜 License
 
 This project is released under the Apache-2.0 License.
