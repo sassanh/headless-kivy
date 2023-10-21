@@ -252,7 +252,7 @@ class HeadlessWidget(Widget):
 
         self.canvas = Canvas()
         with self.canvas:
-            self.fbo = Fbo(size=self.size)
+            self.fbo = Fbo(size=self.size, with_stencilbuffer=True)
             self.fbo_color = Color(1, 1, 1, 1)
             self.fbo_rect = Rectangle()
 
