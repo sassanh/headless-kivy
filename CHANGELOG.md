@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.6
+
+- chore: migrate repository to <https://github.com/ubopod/headless-kivy-pi>
+
 ## Version 0.3.5
 
 - chore: add CHANGELOG.md
