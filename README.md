@@ -12,13 +12,13 @@ You need to compile and install SDL2 from source with `kmsdrm` backend. Please f
 
 ## 📦 Installation
 
-You can install it using this handle: headless-kivy-pi@git+<https://github.com/sassanh/headless-kivy-pi.git>
+You can install it using this handle: headless-kivy-pi@git+<https://github.com/ubopod/headless-kivy-pi.git>
 
 ```sh
 # pip:
-pip install headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git
+pip install headless-kivy-pi@git+https://github.com/ubopod/headless-kivy-pi.git
 # poetry:
-poetry add headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git
+poetry add headless-kivy-pi@git+https://github.com/ubopod/headless-kivy-pi.git
 ```
 
 ## 🚀 Usage
@@ -48,7 +48,7 @@ poetry add headless-kivy-pi@git+https://github.com/sassanh/headless-kivy-pi.git
 
 1. Run the Kivy app as you normally would.
 
-Checkout [Ubo GUI](https://github.com/sassanh/ubo-gui) to see a sample implementation.
+Checkout [Ubo GUI](https://github.com/ubopod/ubo-gui) to see a sample implementation.
 
 ### ⚙️ Parameters
 
