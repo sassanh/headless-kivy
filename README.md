@@ -48,7 +48,7 @@ poetry add headless-kivy-pi@git+https://github.com/ubopod/headless-kivy-pi.git
 
 1. Run the Kivy app as you normally would.
 
-Checkout [Ubo GUI](https://github.com/ubopod/ubo-gui) to see a sample implementation.
+Checkout [Ubo App](https://github.com/ubopod/ubo-app) to see a sample implementation.
 
 ### ⚙️ Parameters
 

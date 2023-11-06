@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.7
+
+- chore: update typing-extensions
+
 ## Version 0.3.6
 
 - chore: migrate repository to <https://github.com/ubopod/headless-kivy-pi>

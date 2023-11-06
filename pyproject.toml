@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "headless-kivy-pi"
-version = "0.3.6"
+version = "0.3.7"
 description = ""
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -22,7 +22,7 @@ priority = "primary"
 python = "^3.9"
 numpy = "^1.24.2"
 kivy = "^2.2.1"
-typing-extensions = "^4.7.1"
+typing-extensions = "^4.8.0"
 
 adafruit-circuitpython-rgb-display = "^3.11.0"
 adafruit-circuitpython-aw9523 = "^1.1.7"
