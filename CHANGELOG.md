@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.0
+
+- chore: add dev extra, remove watchdog and cython
+
 ## Version 0.3.7
 
 - chore: update typing-extensions

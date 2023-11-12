@@ -53,6 +53,7 @@ if IS_RPI:
     import digitalio
     from adafruit_rgb_display.rgb import DisplaySPI as _DisplaySPI
     from adafruit_rgb_display.st7789 import ST7789 as _ST7789
+
     ST7789 = _ST7789
     DisplaySPI = _DisplaySPI
 else:
@@ -70,18 +71,30 @@ MAX_FPS = int(os.environ.get('HEADLESS_KIVY_PI_MAX_FPS', '30'))
 WIDTH = int(os.environ.get('HEADLESS_KIVY_PI_WIDTH', '240'))
 HEIGHT = int(os.environ.get('HEADLESS_KIVY_PI_HEIGHT', '240'))
 BAUDRATE = int(os.environ.get('HEADLESS_KIVY_PI_BAUDRATE', '60000000'))
-DEBUG_MODE = strtobool(
-    os.environ.get('HEADLESS_KIVY_PI_DEBUG', 'False' if IS_RPI else 'True'),
-) == 1
-DOUBLE_BUFFERING = strtobool(
-    os.environ.get('HEADLESS_KIVY_PI_DOUBLE_BUFFERING', 'True'),
-) == 1
-SYNCHRONOUS_CLOCK = strtobool(
-    os.environ.get('HEADLESS_KIVY_PI_SYNCHRONOUS_CLOCK', 'True'),
-) == 1
-AUTOMATIC_FPS_CONTROL = strtobool(
-    os.environ.get('HEADLESS_KIVY_PI_AUTOMATIC_FPS_CONTROL', 'False'),
-) == 1
+DEBUG_MODE = (
+    strtobool(
+        os.environ.get('HEADLESS_KIVY_PI_DEBUG', 'False' if IS_RPI else 'True'),
+    )
+    == 1
+)
+DOUBLE_BUFFERING = (
+    strtobool(
+        os.environ.get('HEADLESS_KIVY_PI_DOUBLE_BUFFERING', 'True'),
+    )
+    == 1
+)
+SYNCHRONOUS_CLOCK = (
+    strtobool(
+        os.environ.get('HEADLESS_KIVY_PI_SYNCHRONOUS_CLOCK', 'True'),
+    )
+    == 1
+)
+AUTOMATIC_FPS_CONTROL = (
+    strtobool(
+        os.environ.get('HEADLESS_KIVY_PI_AUTOMATIC_FPS_CONTROL', 'False'),
+    )
+    == 1
+)
 
 
 class SetupHeadlessConfig(TypedDict):
@@ -132,8 +145,7 @@ def setup_headless(config: SetupHeadlessConfig | None = None) -> None:
     baudrate = config.get('baudrate', BAUDRATE)
     HeadlessWidget.debug_mode = config.get('debug_mode', DEBUG_MODE)
     display_class: DisplaySPI = config.get('st7789', ST7789)
-    HeadlessWidget.double_buffering = config.get(
-        'double_buffering', DOUBLE_BUFFERING)
+    HeadlessWidget.double_buffering = config.get('double_buffering', DOUBLE_BUFFERING)
     HeadlessWidget.synchronous_clock = config.get(
         'synchronous_clock',
         SYNCHRONOUS_CLOCK,
@@ -244,8 +256,7 @@ class HeadlessWidget(Widget):
             self.rendered_frames = 0
             self.skipped_frames = 0
 
-        self.pending_render_threads = Queue(
-            2 if HeadlessWidget.double_buffering else 1)
+        self.pending_render_threads = Queue(2 if HeadlessWidget.double_buffering else 1)
         self.last_hash = 0
         self.last_change = time.time()
         self.fps = self.max_fps
@@ -265,7 +276,9 @@ class HeadlessWidget(Widget):
         super().__init__(**kwargs)
 
         self.render_on_display_event = Clock.create_trigger(
-            self.render_on_display, 0, True,
+            self.render_on_display,
+            0,
+            True,
         )
         self.render_on_display_event()
 
@@ -339,6 +352,7 @@ class HeadlessWidget(Widget):
         It is required in case `release_task` is waiting for the next frame based on
         previous fps and now fps is increased and we don't want to wait that long.
         """
+
         def task() -> None:
             cls.fps_control_queue.release()
             if cls.latest_release_thread:
@@ -388,9 +402,13 @@ class HeadlessWidget(Widget):
 
         # Only render when running on a Raspberry Pi
         if IS_RPI:
-            HeadlessWidget._display._block(0, 0,  # noqa: SLF001
-                                           HeadlessWidget.width - 1,
-                                           HeadlessWidget.height - 1, data_bytes)
+            HeadlessWidget._display._block(
+                0,
+                0,  # noqa: SLF001
+                HeadlessWidget.width - 1,
+                HeadlessWidget.height - 1,
+                data_bytes,
+            )
 
     def render_on_display(self: HeadlessWidget, *_: Any) -> None:  # noqa: ANN401
         """Render the widget on display connected to the SPI controller."""
@@ -416,9 +434,11 @@ class HeadlessWidget(Widget):
         # If `synchronous_clock` is False, skip frames if there are more than one
         # pending render in case `double_buffering` is enabled, or if there are ANY
         # pending render in case `double_buffering` is disabled.
-        if not HeadlessWidget.synchronous_clock and \
-                self.pending_render_threads.qsize() > \
-                (1 if HeadlessWidget.double_buffering else 0):
+        if (
+            not HeadlessWidget.synchronous_clock
+            and self.pending_render_threads.qsize()
+            > (1 if HeadlessWidget.double_buffering else 0)
+        ):
             self.skipped_frames += 1
             return
 
@@ -426,15 +446,20 @@ class HeadlessWidget(Widget):
             self.rendered_frames += 1
 
         data = np.frombuffer(self.texture.pixels, dtype=np.uint8).reshape(
-            HeadlessWidget.width, HeadlessWidget.height, -1,
+            HeadlessWidget.width,
+            HeadlessWidget.height,
+            -1,
         )
         # Flip the image vertically
         data = data[::-1, :, :3].astype(np.uint16)
         data_hash = hash(data.data.tobytes())
         if data_hash == self.last_hash:
             # Only drop FPS when the screen has not changed for at least one second
-            if (self.automatic_fps_control and
-                    time.time() - self.last_change > 1 and self.fps != self.min_fps):
+            if (
+                self.automatic_fps_control
+                and time.time() - self.last_change > 1
+                and self.fps != self.min_fps
+            ):
                 logger.debug('Frame content has not changed for 1 second')
                 self.activate_low_fps_mode()
 

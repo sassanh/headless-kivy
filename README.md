@@ -16,10 +16,13 @@ You can install it using this handle: headless-kivy-pi@git+<https://github.com/u
 
 ```sh
 # pip:
-pip install headless-kivy-pi@git+https://github.com/ubopod/headless-kivy-pi.git
+pip install headless-kivy-pi
 # poetry:
-poetry add headless-kivy-pi@git+https://github.com/ubopod/headless-kivy-pi.git
+poetry add headless-kivy-pi
 ```
+
+To work on a non-RPi environment, install `headless-kivy-pi[rpi]` version.
+To install development packages, install `headless-kivy-pi[dev]` version.
 
 ## 🚀 Usage
 
