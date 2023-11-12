@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.2
+
+- chore: migrate from poetry groups to poetry extras
+
 ## Version 0.4.1
 
 - chore: update development installation command in `README.md`

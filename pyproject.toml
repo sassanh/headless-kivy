@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "headless-kivy-pi"
-version = "0.4.1"
+version = "0.4.2"
 description = "Headless renderer for Kivy framework on Raspberry Pi"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -26,8 +26,6 @@ typing-extensions = "^4.8.0"
 
 adafruit-circuitpython-rgb-display = "^3.11.0"
 adafruit-circuitpython-aw9523 = "^1.1.7"
-
-[tool.poetry.group.dev.dependencies]
 
 screeninfo = { version = "^0.8.1", markers = "platform_machine != 'aarch64'", source = 'PyPI', optional = true }
 
