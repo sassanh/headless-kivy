@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.1
+
+- chore: update development installation command in `README.md`
+
 ## Version 0.4.0
 
 - chore: add dev extra, remove watchdog and cython

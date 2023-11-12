@@ -15,14 +15,17 @@ You need to compile and install SDL2 from source with `kmsdrm` backend. Please f
 You can install it using this handle: headless-kivy-pi@git+<https://github.com/ubopod/headless-kivy-pi.git>
 
 ```sh
-# pip:
 pip install headless-kivy-pi
-# poetry:
-poetry add headless-kivy-pi
 ```
 
-To work on a non-RPi environment, install `headless-kivy-pi[rpi]` version.
-To install development packages, install `headless-kivy-pi[dev]` version.
+To work on a non-RPi environment, run this:
+
+```sh
+# pip:
+pip install headless-kivy-pi[dev]
+# poetry:
+poetry --group dev headless-kivy-pi
+```
 
 ## 🚀 Usage
 
