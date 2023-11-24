@@ -34,9 +34,8 @@ from kivy.graphics import (
     Fbo,
     Rectangle,
 )
+from logger import add_file_handler, add_stdout_handler, logger
 from typing_extensions import Any, NotRequired, TypedDict
-
-from .logger import add_file_handler, add_stdout_handler, logger
 
 if TYPE_CHECKING:
     from kivy.graphics.texture import Texture
@@ -404,7 +403,7 @@ class HeadlessWidget(Widget):
         if IS_RPI:
             HeadlessWidget._display._block(
                 0,
-                0,  # noqa: SLF001
+                0,
                 HeadlessWidget.width - 1,
                 HeadlessWidget.height - 1,
                 data_bytes,
