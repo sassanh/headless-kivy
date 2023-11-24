@@ -4,11 +4,8 @@ This project demonstrates the use of the Kivy framework to create a headless ren
 
 ## ⚡️ Requirements
 
-- Raspberry Pi 4
+- Raspberry Pi 4 or 5
 - SPI Display (tested with ST7789 module)
-- SDL2 with `kmsdrm` backend
-
-You need to compile and install SDL2 from source with `kmsdrm` backend. Please follow the instructions provided [here](https://kivy.org/doc/stable/installation/installation-rpi.html#raspberry-pi-4-headless-installation-on-raspbian-buster)
 
 ## 📦 Installation
 
