@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.5.1
+
+- fix: incorrect local import path
+
 ## Version 0.5.0
 
 - chore: drop support for python 3.9 and 3.10
