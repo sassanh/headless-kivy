@@ -34,8 +34,9 @@ from kivy.graphics import (
     Fbo,
     Rectangle,
 )
-from logger import add_file_handler, add_stdout_handler, logger
 from typing_extensions import Any, NotRequired, TypedDict
+
+from headless_kivy_pi.logger import add_file_handler, add_stdout_handler, logger
 
 if TYPE_CHECKING:
     from kivy.graphics.texture import Texture
