@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.5.3
+
+- feat: add `clear_at_exit` setting and `pause` and `resume` methods
+
 ## Version 0.5.2
 
 - chore: simplify `pyproject.toml` and the setup instructions
