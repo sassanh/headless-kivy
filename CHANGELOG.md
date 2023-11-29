@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.5.6
+
+- fix: ignore data hash and render a single frame after resume
+
 ## Version 0.5.3
 
 - feat: add `clear_at_exit` setting and `pause` and `resume` methods

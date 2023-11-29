@@ -20,7 +20,7 @@ from distutils.util import strtobool
 from pathlib import Path
 from queue import Queue
 from threading import Semaphore, Thread
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import kivy
 import numpy as np
@@ -244,6 +244,7 @@ pixel={BYTES_PER_PIXEL} x bits per byte={BITS_PER_BYTE}))"""
 class HeadlessWidget(Widget):
     """Headless Kivy widget class rendering on SPI connected display."""
 
+    should_ignore_hash: ClassVar = False
     texture = ObjectProperty(None, allownone=True)
     _display: DisplaySPI
 
@@ -363,7 +364,7 @@ class HeadlessWidget(Widget):
 
         def release_task() -> None:
             time.sleep(1 / self.fps)
-            type(self).fps_control_queue.release()
+            HeadlessWidget.fps_control_queue.release()
 
         self.latest_release_thread = Thread(target=release_task)
         self.latest_release_thread.start()
@@ -376,7 +377,9 @@ class HeadlessWidget(Widget):
     @classmethod
     def resume(cls: type[HeadlessWidget]) -> None:
         """Resume writing to the display."""
-        HeadlessWidget.is_paused = False
+        cls.is_paused = False
+        cls.should_ignore_hash = True
+        cls.reset_fps_control_queue()
 
     @classmethod
     def reset_fps_control_queue(cls: type[HeadlessWidget]) -> None:
@@ -449,7 +452,7 @@ class HeadlessWidget(Widget):
     def render_on_display(self: HeadlessWidget, *_: Any) -> None:  # noqa: ANN401
         """Render the widget on display connected to the SPI controller."""
         # Block if it is rendering more FPS than expected
-        type(self).fps_control_queue.acquire()
+        HeadlessWidget.fps_control_queue.acquire()
         self.release_frame()
 
         # Log the number of skipped and rendered frames in the last second
@@ -487,7 +490,7 @@ class HeadlessWidget(Widget):
             -1,
         )
         data_hash = hash(data.data.tobytes())
-        if data_hash == self.last_hash:
+        if data_hash == self.last_hash and not HeadlessWidget.should_ignore_hash:
             # Only drop FPS when the screen has not changed for at least one second
             if (
                 self.automatic_fps_control
@@ -499,6 +502,8 @@ class HeadlessWidget(Widget):
 
             # Considering the content has not changed, this frame can safely be ignored
             return
+
+        HeadlessWidget.should_ignore_hash = False
 
         self.last_change = time.time()
         self.last_hash = data_hash
