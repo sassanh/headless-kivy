@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "headless-kivy-pi"
-version = "0.5.1"
+version = "0.5.2"
 description = "Headless renderer for Kivy framework on Raspberry Pi"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -9,29 +9,24 @@ packages = [{ include = "headless_kivy_pi" }]
 
 
 [[tool.poetry.source]]
-name = "piwheels"
-url = "https://www.piwheels.org/simple/"
-priority = "primary"
-
-[[tool.poetry.source]]
 name = "PyPI"
 priority = "primary"
 
 
 [tool.poetry.dependencies]
 python = "^3.11"
-numpy = "^1.24.2"
-kivy = "^2.2.1"
 typing-extensions = "^4.8.0"
 
-adafruit-circuitpython-rgb-display = { version = "^3.11.0", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
-adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machine == 'aarch64'", source = 'piwheels' }
+numpy = { version = "^1.24.2", source = 'PyPI' }
+kivy = { version = "^2.2.1", source = 'PyPI' }
+adafruit-circuitpython-rgb-display = { version = "^3.11.0", markers = "platform_machine=='aarch64'" }
+adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machine=='aarch64'" }
 
+poethepoet = { version = "^0.24.2", optional = true }
+screeninfo = { version = "^0.8.1", optional = true }
 
-[tool.poetry.group.dev.dependencies]
-poethepoet = { version = "^0.24.2", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
-screeninfo = { version = "^0.8.1", markers = "platform_machine != 'aarch64'", source = 'PyPI' }
-
+[tool.poetry.extras]
+dev = ['poethepoet', 'screeninfo']
 
 [build-system]
 requires = ["poetry-core"]

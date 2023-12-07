@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.5.2
+
+- chore: simplify `pyproject.toml` and the setup instructions
+
 ## Version 0.5.1
 
 - fix: incorrect local import path

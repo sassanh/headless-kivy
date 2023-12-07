@@ -387,6 +387,9 @@ class HeadlessWidget(Widget):
         """Transfer data to the display via SPI controller."""
         logger.debug(f'Rendering frame with hash "{data_hash}"')
 
+        # Flip the image vertically
+        data = data[::-1, :, :3].astype(np.uint16)
+
         color = (
             ((data[:, :, 0] & 0xF8) << 8)
             | ((data[:, :, 1] & 0xFC) << 3)
@@ -450,8 +453,6 @@ class HeadlessWidget(Widget):
             HeadlessWidget.height,
             -1,
         )
-        # Flip the image vertically
-        data = data[::-1, :, :3].astype(np.uint16)
         data_hash = hash(data.data.tobytes())
         if data_hash == self.last_hash:
             # Only drop FPS when the screen has not changed for at least one second
