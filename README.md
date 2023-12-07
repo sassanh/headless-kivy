@@ -39,6 +39,8 @@ poetry --group dev headless-kivy-pi
        display_class=ST7789,
        double_buffering=True,
        synchronous_clock=True,
+       automatic_fps=True,
+       clear_at_exit=True,
    )
    ```
 
@@ -91,7 +93,15 @@ Is set to `True`, it will let Kivy generate the next frame while sending the las
 
 #### `synchronous_clock`
 
-If set to True, Kivy will wait for the LCD before rendering next frames. This will cause Headless to skip frames if they are rendered before the LCD has finished displaying the previous frames. If set to False, frames will be rendered asynchronously, letting Kivy render frames regardless of display being able to catch up or not at the expense of possible frame skipping.
+If set to `True`, Kivy will wait for the LCD before rendering next frames. This will cause Headless to skip frames if they are rendered before the LCD has finished displaying the previous frames. If set to False, frames will be rendered asynchronously, letting Kivy render frames regardless of display being able to catch up or not at the expense of possible frame skipping.
+
+#### `automatic_fps`
+
+If set to `True`, it will monitor the hash of the screen data, if this hash changes, it will increase the fps to the maximum and if the hash doesn't change for a while, it will drop the fps to the minimum.
+
+#### `clear_at_exit`
+
+If set to `True`, it will clear the screen before exiting.
 
 ## ⚒️ Contribution
 
