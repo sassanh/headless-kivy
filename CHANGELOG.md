@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.5.9
+
+- refactor: make `synchronous_clock` enabled by default
+
 ## Version 0.5.8
 
 - refactor: avoid unnecessary scheduled calls of `render_on_display`

@@ -18,7 +18,7 @@ import os
 import time
 from distutils.util import strtobool
 from pathlib import Path
-from queue import Queue
+from queue import Empty, Queue
 from threading import Thread
 from typing import TYPE_CHECKING, ClassVar
 
@@ -71,7 +71,7 @@ MIN_FPS = int(os.environ.get('HEADLESS_KIVY_PI_MIN_FPS', '1'))
 MAX_FPS = int(os.environ.get('HEADLESS_KIVY_PI_MAX_FPS', '32'))
 WIDTH = int(os.environ.get('HEADLESS_KIVY_PI_WIDTH', '240'))
 HEIGHT = int(os.environ.get('HEADLESS_KIVY_PI_HEIGHT', '240'))
-BAUDRATE = int(os.environ.get('HEADLESS_KIVY_PI_BAUDRATE', '70000000'))
+BAUDRATE = int(os.environ.get('HEADLESS_KIVY_PI_BAUDRATE', '60000000'))
 DEBUG_MODE = (
     strtobool(
         os.environ.get('HEADLESS_KIVY_PI_DEBUG', 'False' if IS_RPI else 'True'),
@@ -86,7 +86,7 @@ DOUBLE_BUFFERING = (
 )
 SYNCHRONOUS_CLOCK = (
     strtobool(
-        os.environ.get('HEADLESS_KIVY_PI_SYNCHRONOUS_CLOCK', 'True'),
+        os.environ.get('HEADLESS_KIVY_PI_SYNCHRONOUS_CLOCK', 'False'),
     )
     == 1
 )
@@ -213,7 +213,6 @@ pixel={BYTES_PER_PIXEL} x bits per byte={BITS_PER_BYTE}))"""
             width=width,
             y_offset=80,
             x_offset=0,
-            rotation=180,
             cs=cs_pin,
             dc=dc_pin,
             rst=reset_pin,
@@ -472,9 +471,6 @@ class HeadlessWidget(Widget):
             self.skipped_frames += 1
             return
 
-        if self.debug_mode:
-            self.rendered_frames += 1
-
         data = np.frombuffer(self.texture.pixels, dtype=np.uint8).reshape(
             HeadlessWidget.width,
             HeadlessWidget.height,
@@ -494,6 +490,9 @@ class HeadlessWidget(Widget):
             # Considering the content has not changed, this frame can safely be ignored
             return
 
+        if self.debug_mode:
+            self.rendered_frames += 1
+
         HeadlessWidget.should_ignore_hash = False
 
         self.last_change = time.time()
@@ -503,14 +502,16 @@ class HeadlessWidget(Widget):
             self.activate_high_fps_mode()
 
         # Render the current frame on the display asynchronously
+        try:
+            last_thread = self.pending_render_threads.get(False)
+        except Empty:
+            last_thread = None
         thread = Thread(
             target=self.transfer_to_display,
             args=(
                 data,
                 data_hash,
-                self.pending_render_threads.get()
-                if self.pending_render_threads.qsize() > 0
-                else None,
+                last_thread,
             ),
         )
         self.pending_render_threads.put(thread)
