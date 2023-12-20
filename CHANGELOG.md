@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.5.7
+
+- feat: cancel clock event when kivy app stops
+
 ## Version 0.5.6
 
 - fix: ignore data hash and render a single frame after resume

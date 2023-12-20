@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 import kivy
 import numpy as np
-from kivy.app import ObjectProperty, Widget
+from kivy.app import App, ObjectProperty, Widget
 from kivy.clock import Clock
 from kivy.config import Config
 from kivy.graphics import (
@@ -305,6 +305,9 @@ class HeadlessWidget(Widget):
             True,
         )
         self.render_on_display_event()
+        App.get_running_app().bind(
+            on_stop=lambda _: self.render_on_display_event.cancel(),
+        )
 
     def add_widget(
         self: HeadlessWidget,
