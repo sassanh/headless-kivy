@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.5.10
+
+- feat: ensure `setup_headless` is called before instantiating `HeadlessWidget`
+- feat: periodically write snapshots of the screen to filesystem in debug mode for remote debugging
+- refactor: fix pyright and ruff errors and warnings by faking modules
+- refactor: split `__init__.py` into several files
+
 ## Version 0.5.9
 
 - refactor: make `synchronous_clock` enabled by default
