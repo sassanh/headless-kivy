@@ -1,9 +1,19 @@
 # Changelog
 
+## Version 0.5.12
+
+- fix: make sure `kivy.core.window` is loaded in `setup_headless` to avoid
+  segmentation fault
+
+## Version 0.5.11
+
+- docs: remove instructions to deal with legacy Raspbian from `README.md`
+
 ## Version 0.5.10
 
 - feat: ensure `setup_headless` is called before instantiating `HeadlessWidget`
-- feat: periodically write snapshots of the screen to filesystem in debug mode for remote debugging
+- feat: periodically write snapshots of the screen to filesystem in debug mode for
+  remote debugging
 - refactor: fix pyright and ruff errors and warnings by faking modules
 - refactor: split `__init__.py` into several files
 
@@ -87,7 +97,8 @@
 
 ## Version 0.2.1
 
-- fix: make adafruit-circuitpython-rgb-display conditionally install only on raspberry pi
+- fix: make adafruit-circuitpython-rgb-display conditionally install only on raspberry
+  pi
 
 ## Version 0.2.0
 
@@ -96,17 +107,21 @@
 - feat: add typings and docs
 - docs: add pagination demo
 - chore: update poetry packages and config
-- feat: add activate_low_fps_mode and activate_high_fps_mode to manually set fps when needed
+- feat: add activate_low_fps_mode and activate_high_fps_mode to manually set fps
+  when needed
 - feat: add logging and improve fps handler
 - docs: add sdl installation instructions and a reference to demo.py in README.md
 - feat: drop Kivy FPS to min_fps when the user interface is idle
 - feat: Add default values for `setup_headless()` based on environment variables
 - docs: add demo.py to show all the features in action
 - docs: add README.md
-- feat: avoid sending data to the lcd when the current frame is the same as the last one
+- feat: avoid sending data to the lcd when the current frame is the same as the last
+  one
 - feat: add double buffering
-- feat: add synchronous mode to save CPU time by avoiding Kivy from rendering frames when last frame is not yet rendered on the lcd
+- feat: add synchronous mode to save CPU time by avoiding Kivy from rendering frames
+  when last frame is not yet rendered on the lcd
 
 ## Version 0.1.0
 
-- feat: implement Headless widget to render content on SPI display without needing a display server/window manager
+- feat: implement Headless widget to render content on SPI display without needing
+  a display server/window manager

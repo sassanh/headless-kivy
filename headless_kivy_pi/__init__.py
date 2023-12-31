@@ -100,9 +100,6 @@ class HeadlessWidget(Widget):
             )
             raise RuntimeError(msg)
 
-        if HeadlessWidget.width is None or HeadlessWidget.height is None:
-            msg = '"setup_headless" should be called before instantiating "Headless"'
-            raise RuntimeError(msg)
         if self.debug_mode:
             self.last_second = int(time.time())
             self.rendered_frames = 0
@@ -135,9 +132,9 @@ class HeadlessWidget(Widget):
             interval=True,
         )
         self.render_trigger()
-        App.get_running_app().bind(
-            on_stop=lambda _: self.render_trigger.cancel(),
-        )
+        app = App.get_running_app()
+        if app:
+            app.bind(on_stop=lambda _: self.render_trigger.cancel())
 
     def add_widget(
         self: HeadlessWidget,
@@ -356,6 +353,8 @@ height={HeadlessWidget.height} x bytes per pixel={BYTES_PER_PIXEL} x bits per by
                 msg,
             )
 
+        from kivy.core.window import Window
+
         if IS_RPI:
             Config.set('graphics', 'window_state', 'hidden')
             spi = board.SPI()
@@ -386,7 +385,6 @@ height={HeadlessWidget.height} x bytes per pixel={BYTES_PER_PIXEL} x bits per by
                     ),
                 )
         else:
-            from kivy.core.window import Window
             from screeninfo import get_monitors
 
             monitor = get_monitors()[0]
