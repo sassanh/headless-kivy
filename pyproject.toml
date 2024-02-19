@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "headless-kivy-pi"
-version = "0.5.12"
+version = "0.6.0"
 description = "Headless renderer for Kivy framework on Raspberry Pi"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -49,3 +49,9 @@ multiline-quotes = "double"
 
 [tool.ruff.format]
 quote-style = 'single'
+
+[tool.isort]
+profile = "black"
+
+[tool.pyright]
+exclude = ['typings']

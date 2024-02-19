@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.6.0
+
+- refactor: `HeadlessWidget` is not a singleton anymore, config migrated to config
+  module
+- refactor: initializing display and config is now done in `setup_headless_kivy`
+- feat: class method `get_instance` to get the closest parent instance of type `HeadlessWidget`
+
 ## Version 0.5.12
 
 - fix: make sure `kivy.core.window` is loaded in `setup_headless` to avoid

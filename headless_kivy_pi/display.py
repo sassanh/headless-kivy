@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from headless_kivy_pi.constants import IS_RPI
+from headless_kivy_pi import config
 from headless_kivy_pi.logger import logger
 
 if TYPE_CHECKING:
@@ -20,14 +20,12 @@ def transfer_to_display(
     last_render_thread: Thread,
 ) -> None:
     """Transfer data to the display via SPI controller."""
-    from headless_kivy_pi import HeadlessWidget
-
     logger.debug(f'Rendering frame with hash "{data_hash}"')
 
     # Flip the image vertically
     data = data.reshape(
-        HeadlessWidget.width,
-        HeadlessWidget.height,
+        config.width(),
+        config.height(),
         -1,
     )[::-1, :, :3].astype(np.uint16)
 
@@ -45,11 +43,12 @@ def transfer_to_display(
         last_render_thread.join()
 
     # Only render when running on a Raspberry Pi
-    if IS_RPI:
-        HeadlessWidget._display._block(  # noqa: SLF001
+    display = config._display  # noqa: SLF001
+    if display:
+        display._block(  # noqa: SLF001
             0,
             0,
-            HeadlessWidget.width - 1,
-            HeadlessWidget.height - 1,
+            config.width() - 1,
+            config.height() - 1,
             data_bytes,
         )

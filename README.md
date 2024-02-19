@@ -42,7 +42,7 @@ poetry --group dev headless-kivy-pi
        width=240,
        height=240,
        baudrate=60000000,
-       debug_mode=False,
+       is_debug_mode=False,
        display_class=ST7789,
        double_buffering=True,
        synchronous_clock=True,
@@ -87,7 +87,7 @@ The height of the display in pixels.
 
 The baud rate for the display connection.
 
-#### `debug_mode`
+#### `is_debug_mode`
 
 If set to True, the application will print debug information, including FPS.
 
