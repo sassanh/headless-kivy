@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.6.1
+
+- chore: GitHub workflow to publish pushes on `main` branch to PyPI
+- chore: create GitHub release for main branch in GitHub workflows
+
 ## Version 0.6.0
 
 - refactor: `HeadlessWidget` is not a singleton anymore, config migrated to config

@@ -30,7 +30,6 @@ from kivy.graphics.instructions import Canvas
 from kivy.graphics.vertex_instructions import Rectangle
 from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
-from typing_extensions import Any
 
 from headless_kivy_pi import config
 from headless_kivy_pi.constants import IS_TEST_ENVIRONMENT
@@ -94,7 +93,7 @@ class HeadlessWidget(Widget):
         super().__init__(**kwargs)
 
         self.render_trigger = Clock.create_trigger(
-            lambda _: self.render_on_display(),
+            self.render_on_display,
             1 / self.fps,
             interval=True,
         )
@@ -109,8 +108,8 @@ class HeadlessWidget(Widget):
 
     def add_widget(
         self: HeadlessWidget,
-        *args: Any,  # noqa: ANN401
-        **kwargs: Any,  # noqa: ANN401
+        *args: object,
+        **kwargs: object,
     ) -> None:
         """Extend `Widget.add_widget` and handle `canvas`."""
         canvas = self.canvas
@@ -120,8 +119,8 @@ class HeadlessWidget(Widget):
 
     def remove_widget(
         self: HeadlessWidget,
-        *args: Any,  # noqa: ANN401
-        **kwargs: Any,  # noqa: ANN401
+        *args: object,
+        **kwargs: object,
     ) -> None:
         """Extend `Widget.remove_widget` and handle `canvas`."""
         canvas = self.canvas

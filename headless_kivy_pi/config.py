@@ -1,5 +1,5 @@
 # pyright: reportMissingImports=false
-"""Implement `setup_kivy`, it configures Kivy."""
+"""Implement `setup_headless_kivy`, it configures headless-kivy-pi."""
 from __future__ import annotations
 
 import atexit

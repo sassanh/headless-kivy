@@ -1,24 +1,18 @@
 [tool.poetry]
 name = "headless-kivy-pi"
-version = "0.6.0"
+version = "0.6.1"
 description = "Headless renderer for Kivy framework on Raspberry Pi"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
 packages = [{ include = "headless_kivy_pi" }]
 
-
-[[tool.poetry.source]]
-name = "PyPI"
-priority = "primary"
-
-
 [tool.poetry.dependencies]
 python = "^3.11"
 typing-extensions = "^4.8.0"
 
-numpy = { version = "^1.24.2", source = 'PyPI' }
-kivy = { version = "^2.2.1", source = 'PyPI' }
+numpy = { version = "^1.24.2" }
+kivy = { version = "^2.2.1" }
 adafruit-circuitpython-rgb-display = { version = "^3.11.0", markers = "platform_machine=='aarch64'" }
 adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machine=='aarch64'" }
 
@@ -28,21 +22,26 @@ screeninfo = { version = "^0.8.1", optional = true }
 [tool.poetry.extras]
 dev = ['poethepoet', 'screeninfo']
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.3.1"
+pyright = "^1.1.353"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poe.tasks]
-lint = "pyright -p pyproject.toml ."
+lint = "ruff check . --unsafe-fixes"
+typecheck = "pyright -p pyproject.toml ."
+sanity = ["typecheck", "lint"]
 
 [tool.ruff]
-select = ['ALL']
-ignore = []
+lint.select = ['ALL']
+lint.ignore = ['INP001', 'PLR0911', 'D203', 'D213']
+lint.fixable = ['ALL']
+lint.unfixable = []
 
-fixable = ['ALL']
-unfixable = []
-
-[tool.ruff.flake8-quotes]
+[tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
 inline-quotes = "single"
 multiline-quotes = "double"
