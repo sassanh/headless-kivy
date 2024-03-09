@@ -1,8 +1,12 @@
 # Kivy Headless Renderer for Raspberry Pi
 
-This project demonstrates the use of the Kivy framework to create a headless renderer for a Raspberry Pi. The renderer is specifically designed for and tested with the ST7789 SPI display, but it should work with other SPI displays as well. The code utilizes the Adafruit RGB Display library to communicate with the display. The renderer is optimized to not update the LCD if nothing has changed in the frame.
+This project uses the Kivy framework to create a headless renderer
+for a Raspberry Pi. The renderer is specifically designed for and tested with the
+ST7789 SPI display, but it should work with other SPI displays as well. The code
+utilizes the Adafruit RGB Display library to communicate with the display. The
+renderer is optimized to not update the LCD if nothing has changed in the frame.
 
-## ⚡️ Requirements
+## 📋 Requirements
 
 - Raspberry Pi 4 or 5
 - SPI Display (tested with ST7789 module)
@@ -24,9 +28,12 @@ pip install headless-kivy-pi[dev]
 poetry --group dev headless-kivy-pi
 ```
 
-## 🚀 Usage
+## 🛠 Usage
 
-1. Call setup_headless() before inheriting the `HeadlessWidget` class for the root widget of your application, and provide the optional parameters as needed. For example (these are all default values, you only need to provide the ones you want to change):
+1. Call setup_headless() before inheriting the `HeadlessWidget` class for the root
+   widget of your application, and provide the optional parameters as needed. For
+   example (these are all default values, you only need to provide the ones you want
+   to change):
 
    ```python
    setup_headless(
@@ -35,7 +42,7 @@ poetry --group dev headless-kivy-pi
        width=240,
        height=240,
        baudrate=60000000,
-       debug_mode=False,
+       is_debug_mode=False,
        display_class=ST7789,
        double_buffering=True,
        synchronous_clock=True,
@@ -44,7 +51,8 @@ poetry --group dev headless-kivy-pi
    )
    ```
 
-1. Inherit the `HeadlessWidget` class for the root widget of your Kivy application. For example:
+1. Inherit the `HeadlessWidget` class for the root widget of your Kivy application.
+   For example:
 
    ```python
    class FboFloatLayout(FloatLayout, HeadlessWidget):
@@ -79,7 +87,7 @@ The height of the display in pixels.
 
 The baud rate for the display connection.
 
-#### `debug_mode`
+#### `is_debug_mode`
 
 If set to True, the application will print debug information, including FPS.
 
@@ -89,48 +97,45 @@ The display class to use (default is ST7789).
 
 #### `double_buffering`
 
-Is set to `True`, it will let Kivy generate the next frame while sending the last frame to the display.
+Is set to `True`, it will let Kivy generate the next frame while sending the last
+frame to the display.
 
 #### `synchronous_clock`
 
-If set to `True`, Kivy will wait for the LCD before rendering next frames. This will cause Headless to skip frames if they are rendered before the LCD has finished displaying the previous frames. If set to False, frames will be rendered asynchronously, letting Kivy render frames regardless of display being able to catch up or not at the expense of possible frame skipping.
+If set to `True`, Kivy will wait for the LCD before rendering next frames. This will
+cause Headless to skip frames if they are rendered before the LCD has finished displaying
+the previous frames. If set to False, frames will be rendered asynchronously, letting
+Kivy render frames regardless of display being able to catch up or not at the expense
+of possible frame skipping.
 
 #### `automatic_fps`
 
-If set to `True`, it will monitor the hash of the screen data, if this hash changes, it will increase the fps to the maximum and if the hash doesn't change for a while, it will drop the fps to the minimum.
+If set to `True`, it will monitor the hash of the screen data, if this hash changes,
+it will increase the fps to the maximum and if the hash doesn't change for a while,
+it will drop the fps to the minimum.
 
 #### `clear_at_exit`
 
 If set to `True`, it will clear the screen before exiting.
 
-## ⚒️ Contribution
+## 🤝 Contributing
 
 You need to have [Poetry](https://python-poetry.org/) installed on your machine.
 
-To install poetry in Raspbian you need to follow these instructions to install rust compiler, this is temporary until [this issue](https://github.com/python-poetry/poetry/issues/7645) is resolved:
-
-```sh
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-sudo apt-get install pkg-config libssl-dev
-curl -sSL https://install.python-poetry.org | python3 -
-```
-
-After having poetry, to install the required dependencies, run the following command:
+After having poetry, to install the required dependencies, run the following command
+in the root directory of the project:
 
 ```sh
 poetry install
 ```
 
-Also be aware of [this issue](https://github.com/python-poetry/poetry/issues/1917) and until it is resolved you can manually disable keyring by prefixing your poetry commands like this:
-
-```sh
-PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring poetry install
-```
-
 ## ⚠️ Important Note
 
-This project has only been tested with the ST7789 SPI display module. Other display modules might not be compatible or may require changing the parameters or even modifications to the code.
+This project has only been tested with the ST7789 SPI display module. Other display
+modules might not be compatible or may require changing the parameters or even modifications
+to the code.
 
-## 📜 License
+## 🔒 License
 
-This project is released under the Apache-2.0 License.
+This project is released under the Apache-2.0 License. See the [LICENSE](./LICENSE)
+file for more details.

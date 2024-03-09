@@ -16,13 +16,15 @@ class Fake(ModuleType):
         """Fake constructor."""
         super().__init__('')
 
-    def __getattr__(self: Fake, attr: str) -> Fake:
+    def __getattr__(self: Fake, attr: str) -> Fake | str:
         """Fake all attrs."""
         logger.debug(
-            'Accessing fake attribute of a `Fake` instance',
+            'Accessing fake attribute of a `Fake` insta',
             extra={'attr': attr},
         )
-        return Fake()
+        if attr == '__file__':
+            return 'fake'
+        return self
 
     def __call__(self: Fake, *args: object, **kwargs: object) -> Fake:
         """Fake call."""
