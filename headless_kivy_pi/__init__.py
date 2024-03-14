@@ -32,7 +32,6 @@ from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 
 from headless_kivy_pi import config
-from headless_kivy_pi.constants import IS_TEST_ENVIRONMENT
 from headless_kivy_pi.display import transfer_to_display
 from headless_kivy_pi.logger import logger
 
@@ -61,7 +60,7 @@ class HeadlessWidget(Widget):
 
     def __init__(self: HeadlessWidget, **kwargs: dict[str, object]) -> None:
         """Initialize a `HeadlessWidget`."""
-        if not IS_TEST_ENVIRONMENT:
+        if not config.is_test_environment():
             config.check_initialized()
 
         self.should_ignore_hash = False
@@ -260,6 +259,7 @@ class HeadlessWidget(Widget):
         thread = Thread(
             target=transfer_to_display,
             args=(
+                (self.x, self.y, self.width, self.height),
                 data,
                 data_hash,
                 last_thread,

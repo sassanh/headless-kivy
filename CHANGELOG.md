@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.7.0
+
+- feat: render relevant parts of the screen only
+- feat: keep a copy of the raw data transferred to the display in `config._display.raw_data`
+
 ## Version 0.6.1
 
 - chore: GitHub workflow to publish pushes on `main` branch to PyPI

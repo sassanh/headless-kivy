@@ -8,6 +8,7 @@ from functools import cache
 from typing import TYPE_CHECKING, NoReturn, NotRequired, TypedDict
 
 import kivy
+import numpy as np
 from kivy.config import Config
 
 from headless_kivy_pi.constants import (
@@ -20,7 +21,6 @@ from headless_kivy_pi.constants import (
     HEIGHT,
     IS_DEBUG_MODE,
     IS_RPI,
-    IS_TEST_ENVIRONMENT,
     MAX_FPS,
     MIN_FPS,
     SYNCHRONOUS_CLOCK,
@@ -80,7 +80,7 @@ class SetupHeadlessConfig(TypedDict):
 
 
 _config: SetupHeadlessConfig | None = None
-_display: DisplaySPI | None = None
+_display: DisplaySPI = None
 
 
 def report_uninitialized() -> NoReturn:
@@ -134,16 +134,19 @@ height={height()} x bytes per pixel={BYTES_PER_PIXEL} x bits per byte=\
 {BITS_PER_BYTE}))"""
         raise ValueError(msg)
 
-    if IS_TEST_ENVIRONMENT:
+    if is_test_environment():
         Config.set('graphics', 'window_state', 'hidden')
         from kivy.core.window import Window
-    elif IS_RPI:
+
+    from kivy.metrics import dp
+
+    if IS_RPI:
         Config.set('graphics', 'window_state', 'hidden')
-        spi = board.SPI()
         # Configuration for CS and DC pins (these are PiTFT defaults):
         cs_pin = digitalio.DigitalInOut(board.CE0)
         dc_pin = digitalio.DigitalInOut(board.D25)
         reset_pin = digitalio.DigitalInOut(board.D24)
+        spi = board.SPI()
         _display = display_class(
             spi,
             height=height(),
@@ -171,10 +174,16 @@ height={height()} x bytes per pixel={BYTES_PER_PIXEL} x bits per byte=\
         from screeninfo import get_monitors
 
         monitor = get_monitors()[0]
+        _display = Fake()
 
         Window._win.set_always_on_top(True)  # noqa: SLF001
         Window._set_top(200)  # noqa: SLF001
         Window._set_left(monitor.width - Window._size[0])  # noqa: SLF001
+
+    _display.raw_data = np.zeros(
+        (int(dp(width())), int(dp(height())), 3),
+        dtype=np.uint8,
+    )
 
 
 def check_initialized() -> None:
@@ -221,6 +230,14 @@ def is_debug_mode() -> bool:
     if _config:
         return _config.get('is_debug_mode', IS_DEBUG_MODE)
     report_uninitialized()
+
+
+@cache
+def is_test_environment() -> bool:
+    """Return `True` if the application is running in test environment."""
+    import os
+
+    return 'PYTEST_CURRENT_TEST' in os.environ
 
 
 @cache

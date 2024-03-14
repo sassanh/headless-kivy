@@ -12,9 +12,6 @@ BITS_PER_BYTE = 11
 
 # Configure the headless mode for the Kivy application and initialize the display
 
-IS_TEST_ENVIRONMENT = (
-    strtobool(os.environ.get('HEADLESS_KIVY_PI_TEST_ENVIRONMENT', 'False')) == 1
-)
 MIN_FPS = int(os.environ.get('HEADLESS_KIVY_PI_MIN_FPS', '1'))
 MAX_FPS = int(os.environ.get('HEADLESS_KIVY_PI_MAX_FPS', '32'))
 WIDTH = int(os.environ.get('HEADLESS_KIVY_PI_WIDTH', '240'))
