@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 def transfer_to_display(
+    rectangle: tuple[int, int, int, int],
     data: NDArray[np.uint16],
     data_hash: int,
     last_render_thread: Thread,
@@ -23,11 +24,7 @@ def transfer_to_display(
     logger.debug(f'Rendering frame with hash "{data_hash}"')
 
     # Flip the image vertically
-    data = data.reshape(
-        config.width(),
-        config.height(),
-        -1,
-    )[::-1, :, :3].astype(np.uint16)
+    data = data.reshape(rectangle[2], rectangle[3], -1)[::-1, :, :3].astype(np.uint8)
 
     color = (
         ((data[:, :, 0] & 0xF8) << 8)
@@ -45,10 +42,7 @@ def transfer_to_display(
     # Only render when running on a Raspberry Pi
     display = config._display  # noqa: SLF001
     if display:
-        display._block(  # noqa: SLF001
-            0,
-            0,
-            config.width() - 1,
-            config.height() - 1,
-            data_bytes,
-        )
+        display.raw_data[rectangle[0] : rectangle[0] + rectangle[2]][
+            rectangle[1] : rectangle[1] + rectangle[3]
+        ] = data
+        display._block(*rectangle, data_bytes)  # noqa: SLF001
