@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.7.1
+
+- fix: don't interact with window system when running headless for tests
+
 ## Version 0.7.0
 
 - feat: render relevant parts of the screen only

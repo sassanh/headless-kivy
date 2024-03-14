@@ -134,13 +134,14 @@ height={height()} x bytes per pixel={BYTES_PER_PIXEL} x bits per byte=\
 {BITS_PER_BYTE}))"""
         raise ValueError(msg)
 
+    from kivy.metrics import dp
+
     if is_test_environment():
         Config.set('graphics', 'window_state', 'hidden')
         from kivy.core.window import Window
 
-    from kivy.metrics import dp
-
-    if IS_RPI:
+        _display = Fake()
+    elif IS_RPI:
         Config.set('graphics', 'window_state', 'hidden')
         # Configuration for CS and DC pins (these are PiTFT defaults):
         cs_pin = digitalio.DigitalInOut(board.CE0)
