@@ -205,7 +205,7 @@ jobs:
           path: artifacts
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: artifacts/*
           tag_name: v${{ needs.build.outputs.version }}

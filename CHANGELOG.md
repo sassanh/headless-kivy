@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.7.2
+
+- fix: revert numpy data structure storing display data to uint16 as 2 bytes are
+  used per pixel
+
 ## Version 0.7.1
 
 - fix: don't interact with window system when running headless for tests
