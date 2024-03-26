@@ -1,4 +1,5 @@
 """Implement `transfer_to_display` function."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -24,7 +25,7 @@ def transfer_to_display(
     logger.debug(f'Rendering frame with hash "{data_hash}"')
 
     # Flip the image vertically
-    data = data.reshape(rectangle[2], rectangle[3], -1)[::-1, :, :3].astype(np.uint8)
+    data = data.reshape(rectangle[2], rectangle[3], -1)[::-1, :, :3].astype(np.uint16)
 
     color = (
         ((data[:, :, 0] & 0xF8) << 8)
