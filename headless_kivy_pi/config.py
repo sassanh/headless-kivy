@@ -92,12 +92,18 @@ Note that it might have been imported by another module unintentionally."""
     raise RuntimeError(msg)
 
 
-def setup_headless_kivy(config: SetupHeadlessConfig) -> None:
+def setup_headless_kivy(
+    config: SetupHeadlessConfig,
+    splash_screen: bytes | None = None,
+) -> None:
     """Configure the headless mode for the Kivy application.
 
     Arguments:
     ---------
     config: `SetupHeadlessConfig`
+
+    splash_screen: `bytes`
+        it should have a length of `width` x `height` x 2
 
     """
     global _config, _display  # noqa: PLW0603
@@ -159,6 +165,13 @@ height={height()} x bytes per pixel={BYTES_PER_PIXEL} x bits per byte=\
             dc=dc_pin,
             rst=reset_pin,
             baudrate=baudrate,
+        )
+        _display._block(  # noqa: SLF001
+            0,
+            0,
+            width() - 1,
+            height() - 1,
+            bytes(width() * height() * 2) if splash_screen is None else splash_screen,
         )
         if clear_at_exit:
             atexit.register(

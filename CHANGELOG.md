@@ -3,6 +3,8 @@
 ## Version 0.7.3
 
 - feat: configurable rotation and flip parameters
+- feat: let the user render a splash screen before the first frame is ready to be
+  rendered, if not provided, it renders a black screen
 
 ## Version 0.7.2
 
