@@ -78,6 +78,12 @@ class SetupHeadlessConfig(TypedDict):
     automatic_fps: NotRequired[bool]
     """If set to `True`, it will clear the screen before exiting."""
     clear_at_exit: NotRequired[bool]
+    """The rotation of the display clockwise, it will be multiplied by 90."""
+    rotation: NotRequired[int]
+    """Whether the screen should be flipped horizontally or not"""
+    flip_horizontal: NotRequired[bool]
+    """Whether the screen should be flipped vertically or not"""
+    flip_vertical: NotRequired[bool]
 
 
 _config: SetupHeadlessConfig | None = None

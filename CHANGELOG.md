@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.7.4
+
+- feat: add `rotation`, `flip_horizontal`, and `flip_vertical` parameters to
+  `SetupHeadlessConfig` to allow configuration of the display orientation
+
 ## Version 0.7.3
 
 - feat: configurable rotation and flip parameters
