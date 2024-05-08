@@ -24,8 +24,12 @@ def transfer_to_display(
     """Transfer data to the display via SPI controller."""
     logger.debug(f'Rendering frame with hash "{data_hash}"')
 
-    # Flip the image vertically
-    data = data.reshape(rectangle[2], rectangle[3], -1)[::-1, :, :3].astype(np.uint16)
+    data = data.reshape(rectangle[2], rectangle[3], -1)[:, :, :3].astype(np.uint16)
+    data = np.rot90(data, config.rotation())
+    if config.flip_horizontal():
+        data = np.fliplr(data)
+    if config.flip_vertical():
+        data = np.flipud(data)
 
     color = (
         ((data[:, :, 0] & 0xF8) << 8)

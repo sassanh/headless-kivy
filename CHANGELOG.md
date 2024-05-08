@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.7.3
+
+- feat: configurable rotation and flip parameters
+
 ## Version 0.7.2
 
 - fix: revert numpy data structure storing display data to uint16 as 2 bytes are

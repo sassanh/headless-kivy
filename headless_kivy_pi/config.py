@@ -1,5 +1,6 @@
 # pyright: reportMissingImports=false
 """Implement `setup_headless_kivy`, it configures headless-kivy-pi."""
+
 from __future__ import annotations
 
 import atexit
@@ -76,7 +77,7 @@ class SetupHeadlessConfig(TypedDict):
     a while, it will drop the fps to the minimum."""
     automatic_fps: NotRequired[bool]
     """If set to `True`, it will clear the screen before exiting."""
-    clear_at_eixt: NotRequired[bool]
+    clear_at_exit: NotRequired[bool]
 
 
 _config: SetupHeadlessConfig | None = None
@@ -262,6 +263,30 @@ def automatic_fps() -> bool:
     """headless-kivy-pi adjusts the FPS automatically."""
     if _config:
         return _config.get('automatic_fps', AUTOMATIC_FPS)
+    report_uninitialized()
+
+
+@cache
+def rotation() -> int:
+    """Return the rotation of the display."""
+    if _config:
+        return _config.get('rotation', 0)
+    report_uninitialized()
+
+
+@cache
+def flip_horizontal() -> bool:
+    """Return `True` if the display is flipped horizontally."""
+    if _config:
+        return _config.get('flip_horizontal', False)
+    report_uninitialized()
+
+
+@cache
+def flip_vertical() -> bool:
+    """Return `True` if the display is flipped vertically."""
+    if _config:
+        return _config.get('flip_vertical', False)
     report_uninitialized()
 
 
