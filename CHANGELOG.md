@@ -3,6 +3,7 @@
 ## Version 0.8.0
 
 - refactor: use `str_to_bool` of `python-strtobool` instead of `strtobool` of `distutils`
+- feat: add snapshot fixture
 
 ## Version 0.7.4
 

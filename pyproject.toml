@@ -5,10 +5,13 @@ description = "Headless renderer for Kivy framework on Raspberry Pi"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
-packages = [{ include = "headless_kivy_pi" }]
 homepage = 'https://github.com/sassanh/headless-kivy-pi/'
 repository = 'https://github.com/sassanh/headless-kivy-pi/'
 keywords = ['kivy', 'raspberry-pi', 'headless', 'display']
+packages = [
+  { include = "headless_kivy_pi" },
+  { include = "headless_kivy_pi_pytest" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -29,6 +32,8 @@ dev = ['poethepoet', 'screeninfo']
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.10"
 pyright = "^1.1.368"
+pytest = "^8.2.2"
+pypng = "^0.20220715.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -49,6 +54,10 @@ lint.unfixable = []
 docstring-quotes = "double"
 inline-quotes = "single"
 multiline-quotes = "double"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR0913", "PLR0915"]
+"headless_kivy_pi_pytest/*" = ["S101", "PLR0913", "PLR0915"]
 
 [tool.ruff.format]
 quote-style = 'single'
