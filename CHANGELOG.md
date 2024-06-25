@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.8.0
+
+- refactor: use `str_to_bool` of `python-strtobool` instead of `strtobool` of `distutils`
+
 ## Version 0.7.4
 
 - feat: add `rotation`, `flip_horizontal`, and `flip_vertical` parameters to

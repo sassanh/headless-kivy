@@ -1,9 +1,11 @@
 """Provide constants of the package."""
-# Check if the code is running on a Raspberry Pi
+
 import os
-from distutils.util import strtobool
 from pathlib import Path
 
+from str_to_bool import str_to_bool
+
+# Check if the code is running on a Raspberry Pi
 IS_RPI = Path('/etc/rpi-issue').exists()
 
 # Constants for calculations
@@ -18,29 +20,29 @@ WIDTH = int(os.environ.get('HEADLESS_KIVY_PI_WIDTH', '240'))
 HEIGHT = int(os.environ.get('HEADLESS_KIVY_PI_HEIGHT', '240'))
 BAUDRATE = int(os.environ.get('HEADLESS_KIVY_PI_BAUDRATE', '60000000'))
 IS_DEBUG_MODE = (
-    strtobool(
+    str_to_bool(
         os.environ.get('HEADLESS_KIVY_PI_DEBUG', 'False' if IS_RPI else 'True'),
     )
     == 1
 )
 DOUBLE_BUFFERING = (
-    strtobool(
+    str_to_bool(
         os.environ.get('HEADLESS_KIVY_PI_DOUBLE_BUFFERING', 'True'),
     )
     == 1
 )
 SYNCHRONOUS_CLOCK = (
-    strtobool(
+    str_to_bool(
         os.environ.get('HEADLESS_KIVY_PI_SYNCHRONOUS_CLOCK', 'False'),
     )
     == 1
 )
 AUTOMATIC_FPS = (
-    strtobool(
+    str_to_bool(
         os.environ.get('HEADLESS_KIVY_PI_AUTOMATIC_FPS', 'True'),
     )
     == 1
 )
 CLEAR_AT_EXIT = (
-    strtobool(os.environ.get('HEADLESS_KIVY_PI_CLEAR_AT_EXIT', 'False')) == 1
+    str_to_bool(os.environ.get('HEADLESS_KIVY_PI_CLEAR_AT_EXIT', 'False')) == 1
 )

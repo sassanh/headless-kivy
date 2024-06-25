@@ -1,11 +1,14 @@
 [tool.poetry]
 name = "headless-kivy-pi"
-version = "0.7.4"
+version = "0.8.0"
 description = "Headless renderer for Kivy framework on Raspberry Pi"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
 packages = [{ include = "headless_kivy_pi" }]
+homepage = 'https://github.com/sassanh/headless-kivy-pi/'
+repository = 'https://github.com/sassanh/headless-kivy-pi/'
+keywords = ['kivy', 'raspberry-pi', 'headless', 'display']
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -18,13 +21,14 @@ adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machin
 
 poethepoet = { version = "^0.24.2", optional = true }
 screeninfo = { version = "^0.8.1", optional = true }
+python-strtobool = "^1.0.0"
 
 [tool.poetry.extras]
 dev = ['poethepoet', 'screeninfo']
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.3.1"
-pyright = "^1.1.353"
+ruff = "^0.4.10"
+pyright = "^1.1.368"
 
 [build-system]
 requires = ["poetry-core"]
