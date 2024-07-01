@@ -149,12 +149,7 @@ height={height()} x bytes per pixel={BYTES_PER_PIXEL} x bits per byte=\
 
     from kivy.metrics import dp
 
-    if is_test_environment():
-        Config.set('graphics', 'window_state', 'hidden')
-        from kivy.core.window import Window
-
-        _display = Fake()
-    elif IS_RPI:
+    if IS_RPI:
         Config.set('graphics', 'window_state', 'hidden')
         # Configuration for CS and DC pins (these are PiTFT defaults):
         cs_pin = digitalio.DigitalInOut(board.CE0)
@@ -251,14 +246,6 @@ def is_debug_mode() -> bool:
     if _config:
         return _config.get('is_debug_mode', IS_DEBUG_MODE)
     report_uninitialized()
-
-
-@cache
-def is_test_environment() -> bool:
-    """Return `True` if the application is running in test environment."""
-    import os
-
-    return 'PYTEST_CURRENT_TEST' in os.environ
 
 
 @cache

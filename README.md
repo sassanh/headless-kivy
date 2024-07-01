@@ -1,4 +1,4 @@
-# Kivy Headless Renderer for Raspberry Pi
+# Kivy Headless Renderer
 
 This project uses the Kivy framework to create a headless renderer
 for a Raspberry Pi. The renderer is specifically designed for and tested with the

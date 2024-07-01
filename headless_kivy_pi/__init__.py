@@ -12,6 +12,7 @@ When no animation is running, you can drop fps to `min_fps` by calling
 
 To increase fps to `max_fps` call `activate_high_fps_mode`.
 """
+
 from __future__ import annotations
 
 import time
@@ -60,8 +61,7 @@ class HeadlessWidget(Widget):
 
     def __init__(self: HeadlessWidget, **kwargs: dict[str, object]) -> None:
         """Initialize a `HeadlessWidget`."""
-        if not config.is_test_environment():
-            config.check_initialized()
+        config.check_initialized()
 
         self.should_ignore_hash = False
 

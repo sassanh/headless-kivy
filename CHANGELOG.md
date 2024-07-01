@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.8.1
+
+- refactor: drop `is_test_environment`, the code using headless kivy should be
+  responsible for setting up the environment so that it can fully customize the
+  configuration
+
 ## Version 0.8.0
 
 - refactor: use `str_to_bool` of `python-strtobool` instead of `strtobool` of `distutils`
