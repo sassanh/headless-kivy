@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.8.2
+
+- refactor: drop code for positioning the window on the screen
+
 ## Version 0.8.1
 
 - refactor: drop `is_test_environment`, the code using headless kivy should be

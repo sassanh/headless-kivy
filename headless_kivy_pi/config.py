@@ -186,15 +186,7 @@ height={height()} x bytes per pixel={BYTES_PER_PIXEL} x bits per byte=\
                 ),
             )
     else:
-        from kivy.core.window import Window
-        from screeninfo import get_monitors
-
-        monitor = get_monitors()[0]
         _display = Fake()
-
-        Window._win.set_always_on_top(True)  # noqa: SLF001
-        Window._set_top(200)  # noqa: SLF001
-        Window._set_left(monitor.width - Window._size[0])  # noqa: SLF001
 
     _display.raw_data = np.zeros(
         (int(dp(width())), int(dp(height())), 3),
