@@ -1,31 +1,26 @@
 # Kivy Headless Renderer
 
-This project uses the Kivy framework to create a headless renderer
-for a Raspberry Pi. The renderer is specifically designed for and tested with the
-ST7789 SPI display, but it should work with other SPI displays as well. The code
-utilizes the Adafruit RGB Display library to communicate with the display. The
-renderer is optimized to not update the LCD if nothing has changed in the frame.
+This project provides utilities to render Kivy applications headlessly. It can be
+used in test environments, it also provides tools for snapshot testing.
+It can also be used on a Raspberry Pi or similar devices to render the Kivy application
+on a custom display like an SPI display.
 
-## 📋 Requirements
-
-- Raspberry Pi 4 or 5
-- SPI Display (tested with ST7789 module)
+The renderer is optimized to not schedule a render when nothing has changed since
+the last rendered frame.
 
 ## 📦 Installation
 
-You can install it using this handle: headless-kivy-pi@git+<https://github.com/ubopod/headless-kivy-pi.git>
-
 ```sh
-pip install headless-kivy-pi
+pip install headless-kivy
 ```
 
 To work on a non-RPi environment, run this:
 
 ```sh
 # pip:
-pip install headless-kivy-pi[dev]
+pip install headless-kivy[dev]
 # poetry:
-poetry --group dev headless-kivy-pi
+poetry --group dev headless-kivy
 ```
 
 ## 🛠 Usage
@@ -41,13 +36,10 @@ poetry --group dev headless-kivy-pi
        max_fps=30,
        width=240,
        height=240,
-       baudrate=60000000,
        is_debug_mode=False,
        display_class=ST7789,
        double_buffering=True,
-       synchronous_clock=True,
        automatic_fps=True,
-       clear_at_exit=True,
    )
    ```
 
@@ -65,7 +57,34 @@ Checkout [Ubo App](https://github.com/ubopod/ubo-app) to see a sample implementa
 
 ### ⚙️ Parameters
 
-These parameters can be set to control the behavior of headless kivy pi:
+These parameters can be set to control the behavior of headless kivy:
+
+#### `callback`
+
+A callback function that will be called when the screen data changes. It should
+have this signature:
+
+```python
+def render(
+    *,
+    rectangle: tuple[int, int, int, int],
+    data: NDArray[np.uint16],
+    data_hash: int,
+    last_render_thread: Thread,
+) -> None: ...
+```
+
+`rectangle` is a tuple with the coordinates and size of the changed area in the
+`(x, y, width, height)` format.
+
+`data` is a numpy array with the screen RGB data in the `uint16` format. So its
+dimensions are `(width, height, 3)`.
+
+`data_hash` is probably not very useful for most cases, it is mostly for logging
+and debugging purposes.
+
+It always runs in a new thread, the previous thread is provided so that it can call
+its `join` if desired.
 
 #### `min_fps`
 
@@ -83,30 +102,14 @@ The width of the display in pixels.
 
 The height of the display in pixels.
 
-#### `baudrate`
-
-The baud rate for the display connection.
-
 #### `is_debug_mode`
 
 If set to True, the application will print debug information, including FPS.
-
-#### `display_class`
-
-The display class to use (default is ST7789).
 
 #### `double_buffering`
 
 Is set to `True`, it will let Kivy generate the next frame while sending the last
 frame to the display.
-
-#### `synchronous_clock`
-
-If set to `True`, Kivy will wait for the LCD before rendering next frames. This will
-cause Headless to skip frames if they are rendered before the LCD has finished displaying
-the previous frames. If set to False, frames will be rendered asynchronously, letting
-Kivy render frames regardless of display being able to catch up or not at the expense
-of possible frame skipping.
 
 #### `automatic_fps`
 
@@ -114,9 +117,17 @@ If set to `True`, it will monitor the hash of the screen data, if this hash chan
 it will increase the fps to the maximum and if the hash doesn't change for a while,
 it will drop the fps to the minimum.
 
-#### `clear_at_exit`
+#### `rotation`
 
-If set to `True`, it will clear the screen before exiting.
+The rotation of the display. It will be multiplied by 90 degrees.
+
+#### `flip_horizontal`
+
+If set to `True`, it will flip the display horizontally.
+
+#### `flip_vertical`
+
+If set to `True`, it will flip the display vertically.
 
 ## 🤝 Contributing
 

@@ -1,17 +1,14 @@
 [tool.poetry]
-name = "headless-kivy-pi"
-version = "0.8.2"
+name = "headless-kivy"
+version = "0.9.0"
 description = "Headless renderer for Kivy framework"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
-homepage = 'https://github.com/sassanh/headless-kivy-pi/'
-repository = 'https://github.com/sassanh/headless-kivy-pi/'
-keywords = ['kivy', 'headless', 'display', 'pytest']
-packages = [
-  { include = "headless_kivy_pi" },
-  { include = "headless_kivy_pi_pytest" },
-]
+homepage = 'https://github.com/sassanh/headless-kivy/'
+repository = 'https://github.com/sassanh/headless-kivy/'
+keywords = ['kivy', 'headless', 'display', 'pytest', 'test']
+packages = [{ include = "headless_kivy" }, { include = "headless_kivy_pytest" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -19,21 +16,18 @@ typing-extensions = "^4.8.0"
 
 numpy = { version = "^1.24.2" }
 kivy = { version = "^2.2.1" }
-adafruit-circuitpython-rgb-display = { version = "^3.11.0", markers = "platform_machine=='aarch64'" }
-adafruit-circuitpython-aw9523 = { version = "^1.1.7", markers = "platform_machine=='aarch64'" }
 
-poethepoet = { version = "^0.24.2", optional = true }
-screeninfo = { version = "^0.8.1", optional = true }
+pypng = { version = "^0.20220715.0", optional = true }
 python-strtobool = "^1.0.0"
 
 [tool.poetry.extras]
-dev = ['poethepoet', 'screeninfo']
+test = ['pypng']
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.4.10"
-pyright = "^1.1.368"
+poethepoet = "^0.24.2"
+ruff = "^0.5.0"
+pyright = "^1.1.370"
 pytest = "^8.2.2"
-pypng = "^0.20220715.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -57,7 +51,7 @@ multiline-quotes = "double"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "PLR0913", "PLR0915"]
-"headless_kivy_pi_pytest/*" = ["S101", "PLR0913", "PLR0915"]
+"headless_kivy_pytest/*" = ["S101", "PLR0913", "PLR0915"]
 
 [tool.ruff.format]
 quote-style = 'single'

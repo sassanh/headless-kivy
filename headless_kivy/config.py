@@ -1,53 +1,39 @@
 # pyright: reportMissingImports=false
-"""Implement `setup_headless_kivy`, it configures headless-kivy-pi."""
+"""Implement `setup_headless_kivy`, it configures headless-kivy."""
 
 from __future__ import annotations
 
-import atexit
-import sys
 from functools import cache
-from typing import TYPE_CHECKING, NoReturn, NotRequired, TypedDict
+from typing import TYPE_CHECKING, NoReturn, NotRequired, Protocol, TypedDict
 
 import kivy
 import numpy as np
 from kivy.config import Config
 
-from headless_kivy_pi.constants import (
+from headless_kivy.constants import (
     AUTOMATIC_FPS,
-    BAUDRATE,
-    BITS_PER_BYTE,
-    BYTES_PER_PIXEL,
-    CLEAR_AT_EXIT,
     DOUBLE_BUFFERING,
     HEIGHT,
     IS_DEBUG_MODE,
-    IS_RPI,
     MAX_FPS,
     MIN_FPS,
-    SYNCHRONOUS_CLOCK,
     WIDTH,
 )
-from headless_kivy_pi.fake import Fake
-from headless_kivy_pi.logger import add_file_handler, add_stdout_handler
-
-if not IS_RPI:
-    sys.modules['board'] = Fake()
-    sys.modules['digitalio'] = Fake()
-    sys.modules['adafruit_rgb_display.st7789'] = Fake()
-
-import board
-import digitalio
-from adafruit_rgb_display.st7789 import ST7789
-
-kivy.require('2.3.0')
+from headless_kivy.logger import add_file_handler, add_stdout_handler
 
 if TYPE_CHECKING:
-    from adafruit_rgb_display.rgb import DisplaySPI
+    from threading import Thread
+
+    from numpy._typing import NDArray
+
+kivy.require('2.3.0')
 
 
 class SetupHeadlessConfig(TypedDict):
     """Arguments of `setup_headless_kivy` function."""
 
+    """The callback function that will render the data to the screen."""
+    callback: Callback
     """Minimum frames per second for when the Kivy application is idle."""
     min_fps: NotRequired[int]
     """Maximum frames per second for the Kivy application."""
@@ -56,28 +42,16 @@ class SetupHeadlessConfig(TypedDict):
     width: NotRequired[int]
     """The height of the display in pixels."""
     height: NotRequired[int]
-    """The baud rate for the display connection."""
-    baudrate: NotRequired[int]
     """If set to True, the application will consume computational resources to log
     additional debug information."""
     is_debug_mode: NotRequired[bool]
-    """The display class to use (default is ST7789)."""
-    display_class: NotRequired[type[DisplaySPI]]
-    """Is set to `True`, it will let Kivy generate the next frame while sending the
+    """Is set to `True`, it will let Kivy to generate the next frame while sending the
     last frame to the display."""
     double_buffering: NotRequired[bool]
-    """If set to `True`, Kivy will wait for the LCD before rendering next frames. This
-    will cause Headless to skip frames if they are rendered before the LCD has finished
-    displaying the previous frames. If set to False, frames will be rendered
-    asynchronously, letting Kivy render frames regardless of display being able to catch
-    up or not at the expense of possible frame skipping."""
-    synchronous_clock: NotRequired[bool]
     """If set to `True`, it will monitor the hash of the screen data, if this hash
     changes, it will increase the fps to the maximum and if the hash doesn't change for
     a while, it will drop the fps to the minimum."""
     automatic_fps: NotRequired[bool]
-    """If set to `True`, it will clear the screen before exiting."""
-    clear_at_exit: NotRequired[bool]
     """The rotation of the display clockwise, it will be multiplied by 90."""
     rotation: NotRequired[int]
     """Whether the screen should be flipped horizontally or not"""
@@ -87,7 +61,6 @@ class SetupHeadlessConfig(TypedDict):
 
 
 _config: SetupHeadlessConfig | None = None
-_display: DisplaySPI = None
 
 
 def report_uninitialized() -> NoReturn:
@@ -98,10 +71,7 @@ Note that it might have been imported by another module unintentionally."""
     raise RuntimeError(msg)
 
 
-def setup_headless_kivy(
-    config: SetupHeadlessConfig,
-    splash_screen: bytes | None = None,
-) -> None:
+def setup_headless_kivy(config: SetupHeadlessConfig) -> None:
     """Configure the headless mode for the Kivy application.
 
     Arguments:
@@ -112,7 +82,7 @@ def setup_headless_kivy(
         it should have a length of `width` x `height` x 2
 
     """
-    global _config, _display  # noqa: PLW0603
+    global _config  # noqa: PLW0603
     _config = config
 
     if is_debug_mode():
@@ -129,66 +99,16 @@ def setup_headless_kivy(
     Config.set('graphics', 'width', f'{width()}')
     Config.set('graphics', 'height', f'{height()}')
 
-    baudrate = config.get('baudrate', BAUDRATE)
-    display_class: DisplaySPI = config.get('st7789', ST7789)
-    clear_at_exit = config.get('clear_at_exit', CLEAR_AT_EXIT)
-
     if min_fps() > max_fps():
         msg = f"""Invalid value "{min_fps()}" for "min_fps", it can't \
 be higher than 'max_fps' which is set to '{max_fps()}'."""
         raise ValueError(msg)
 
-    fps_cap = baudrate / (width() * height() * BYTES_PER_PIXEL * BITS_PER_BYTE)
-
-    if max_fps() > fps_cap:
-        msg = f"""Invalid value "{max_fps()}" for "max_fps", it can't \
-be higher than "{fps_cap:.1f}" (baudrate={baudrate} ÷ (width={width()} x \
-height={height()} x bytes per pixel={BYTES_PER_PIXEL} x bits per byte=\
-{BITS_PER_BYTE}))"""
-        raise ValueError(msg)
-
     from kivy.metrics import dp
 
-    if IS_RPI:
-        Config.set('graphics', 'window_state', 'hidden')
-        # Configuration for CS and DC pins (these are PiTFT defaults):
-        cs_pin = digitalio.DigitalInOut(board.CE0)
-        dc_pin = digitalio.DigitalInOut(board.D25)
-        reset_pin = digitalio.DigitalInOut(board.D24)
-        spi = board.SPI()
-        _display = display_class(
-            spi,
-            height=height(),
-            width=width(),
-            y_offset=80,
-            x_offset=0,
-            cs=cs_pin,
-            dc=dc_pin,
-            rst=reset_pin,
-            baudrate=baudrate,
-        )
-        _display._block(  # noqa: SLF001
-            0,
-            0,
-            width() - 1,
-            height() - 1,
-            bytes(width() * height() * 2) if splash_screen is None else splash_screen,
-        )
-        if clear_at_exit:
-            atexit.register(
-                lambda: _display
-                and _display._block(  # noqa: SLF001
-                    0,
-                    0,
-                    width() - 1,
-                    height() - 1,
-                    bytes(width() * height() * 2),
-                ),
-            )
-    else:
-        _display = Fake()
+    from headless_kivy import HeadlessWidget
 
-    _display.raw_data = np.zeros(
+    HeadlessWidget.raw_data = np.zeros(
         (int(dp(width())), int(dp(height())), 3),
         dtype=np.uint8,
     )
@@ -198,6 +118,28 @@ def check_initialized() -> None:
     """Check if the module has been initialized."""
     if not _config:
         report_uninitialized()
+
+
+class Callback(Protocol):
+    """The signature of the renderer function."""
+
+    def __call__(
+        self: Callback,
+        *,
+        rectangle: tuple[int, int, int, int],
+        data: NDArray[np.uint16],
+        data_hash: int,
+        last_render_thread: Thread,
+    ) -> None:
+        """Render the data to the screen."""
+
+
+@cache
+def callback() -> Callback:
+    """Return the render function, called whenever data is ready to be rendered."""
+    if _config:
+        return _config.get('callback', lambda **_: None)
+    report_uninitialized()
 
 
 @cache
@@ -249,16 +191,8 @@ def double_buffering() -> bool:
 
 
 @cache
-def synchronous_clock() -> bool:
-    """headless-kivy-pi will wait for the LCD before rendering next frames."""
-    if _config:
-        return _config.get('synchronous_clock', SYNCHRONOUS_CLOCK)
-    report_uninitialized()
-
-
-@cache
 def automatic_fps() -> bool:
-    """headless-kivy-pi adjusts the FPS automatically."""
+    """headless-kivy adjusts the FPS automatically."""
     if _config:
         return _config.get('automatic_fps', AUTOMATIC_FPS)
     report_uninitialized()
@@ -286,23 +220,3 @@ def flip_vertical() -> bool:
     if _config:
         return _config.get('flip_vertical', False)
     report_uninitialized()
-
-
-_is_paused: bool = False
-
-
-def is_paused() -> bool:
-    """Return `True` if rendering the application is paused."""
-    return _is_paused
-
-
-def pause() -> None:
-    """Pause rendering the application."""
-    global _is_paused  # noqa: PLW0603
-    _is_paused = True
-
-
-def resume() -> None:
-    """Resume rendering the application."""
-    global _is_paused  # noqa: PLW0603
-    _is_paused = False

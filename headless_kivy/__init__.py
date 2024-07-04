@@ -1,4 +1,3 @@
-# pyright: reportMissingImports=false
 """Implement a Kivy widget that renders everything to SPI display while being headless.
 
 * IMPORTANT: You need to run `setup_headless` function before instantiating
@@ -32,13 +31,12 @@ from kivy.graphics.vertex_instructions import Rectangle
 from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 
-from headless_kivy_pi import config
-from headless_kivy_pi.display import transfer_to_display
-from headless_kivy_pi.logger import logger
+from headless_kivy import config
+from headless_kivy.logger import logger
 
 if TYPE_CHECKING:
-    from adafruit_rgb_display.rgb import DisplaySPI
     from kivy.graphics.texture import Texture
+    from numpy._typing import NDArray
 
 
 class HeadlessWidget(Widget):
@@ -47,7 +45,6 @@ class HeadlessWidget(Widget):
     _is_setup_headless_called: bool = False
     should_ignore_hash: bool = False
     texture = ObjectProperty(None, allownone=True)
-    _display: DisplaySPI
 
     last_second: int
     rendered_frames: int
@@ -58,6 +55,8 @@ class HeadlessWidget(Widget):
 
     fbo: Fbo
     fbo_rect: Rectangle
+
+    raw_data: NDArray[np.uint8]
 
     def __init__(self: HeadlessWidget, **kwargs: dict[str, object]) -> None:
         """Initialize a `HeadlessWidget`."""
@@ -186,9 +185,6 @@ class HeadlessWidget(Widget):
 
     def render_on_display(self: HeadlessWidget, *_: object) -> None:
         """Render the widget on display connected to the SPI controller."""
-        if config.is_paused():
-            return
-
         # Log the number of skipped and rendered frames in the last second
         if config.is_debug_mode():
             # Increment rendered_frames/skipped_frames count every frame and reset their
@@ -203,15 +199,6 @@ class HeadlessWidget(Widget):
                 self.last_second = current_second
                 self.rendered_frames = 0
                 self.skipped_frames = 0
-
-        # If `synchronous_clock` is False, skip frames if there are more than one
-        # pending render in case `double_buffering` is enabled, or if there are ANY
-        # pending render in case `double_buffering` is disabled.
-        if not config.synchronous_clock() and self.pending_render_threads.qsize() > (
-            1 if config.double_buffering() else 0
-        ):
-            self.skipped_frames += 1
-            return
 
         data = np.frombuffer(self.texture.pixels, dtype=np.uint8)
         data_hash = hash(data.data.tobytes())
@@ -230,8 +217,8 @@ class HeadlessWidget(Widget):
 
         if config.is_debug_mode():
             self.rendered_frames += 1
-            with Path('headless_kivy_pi_buffer.raw').open('wb') as snapshot_file:
-                snapshot_file.write(
+            with Path('headless_kivy_buffer.raw').open('wb') as file:
+                file.write(
                     bytes(
                         data.reshape(
                             config.width(),
@@ -247,7 +234,7 @@ class HeadlessWidget(Widget):
 
         self.last_change = time.time()
         self.last_hash = data_hash
-        if config.automatic_fps and self.fps != config.max_fps():
+        if config.automatic_fps() and self.fps != config.max_fps():
             logger.debug('Frame content has changed')
             self.activate_high_fps_mode()
 
@@ -256,14 +243,19 @@ class HeadlessWidget(Widget):
             last_thread = self.pending_render_threads.get(False)
         except Empty:
             last_thread = None
+
+        HeadlessWidget.raw_data[self.x : self.x + self.width][
+            self.y : self.y + self.height
+        ] = data
+
         thread = Thread(
-            target=transfer_to_display,
-            args=(
-                (self.x, self.y, self.width, self.height),
-                data,
-                data_hash,
-                last_thread,
-            ),
+            target=config.callback(),
+            kwargs={
+                'rectangle': (self.x, self.y, self.width, self.height),
+                'data': data,
+                'data_hash': data_hash,
+                'last_render_thread': last_thread,
+            },
             daemon=True,
         )
         self.pending_render_threads.put(thread)

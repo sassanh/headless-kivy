@@ -72,9 +72,9 @@ class WindowSnapshot:
         """Return the hash of the content of the window."""
         import hashlib
 
-        from headless_kivy_pi.config import _display
+        from headless_kivy import HeadlessWidget
 
-        array = _display.raw_data
+        array = HeadlessWidget.raw_data
         data = array.tobytes()
         sha256 = hashlib.sha256()
         sha256.update(data)
@@ -103,7 +103,7 @@ class WindowSnapshot:
 
         from pathlib import Path
 
-        from headless_kivy_pi.config import _display
+        from headless_kivy import HeadlessWidget
 
         filename = self.get_filename(title)
         path = Path(self.results_dir / filename)
@@ -112,7 +112,7 @@ class WindowSnapshot:
         hash_mismatch_path = path.with_suffix('.mismatch.hash')
         image_mismatch_path = path.with_suffix('.mismatch.png')
 
-        array = _display.raw_data
+        array = HeadlessWidget.raw_data
 
         new_snapshot = self.hash
         if self.override:

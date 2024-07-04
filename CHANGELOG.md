@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 0.9.0
+
+- refactor: remove all features specific to Raspberry Pi, now it is a general headless
+  Kivy library suitable for different platforms and test environments
+- build: rename project to `headless-kivy` as it is not specific to Raspberry Pi
+  anymore
+- build: update repository to <https://github.com/sassanh/headless-kivy>
+
 ## Version 0.8.2
 
 - refactor: drop code for positioning the window on the screen

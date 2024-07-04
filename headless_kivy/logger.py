@@ -2,7 +2,7 @@
 import logging
 import sys
 
-logger = logging.getLogger('headless-kivy-pi')
+logger = logging.getLogger('headless-kivy')
 logger.setLevel(logging.INFO)
 logger.propagate = False
 
@@ -20,7 +20,7 @@ def add_stdout_handler() -> None:
 
 
 def add_file_handler() -> None:
-    file_handler = logging.FileHandler('headless-kivy-pi.log')
+    file_handler = logging.FileHandler('headless-kivy.log')
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
         logging.Formatter(

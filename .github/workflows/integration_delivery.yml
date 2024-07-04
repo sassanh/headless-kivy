@@ -37,7 +37,7 @@ jobs:
           virtualenvs-create: true
 
       - name: Install dependencies
-        run: poetry install --extras=dev --with dev
+        run: poetry install --extras=test --with dev
 
   type-check:
     name: Type Check
