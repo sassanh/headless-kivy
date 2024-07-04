@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.1
+
+- fix: consider alpha channel in the data stored in `raw_data` field of `HeadlessWidget`
+
 ## Version 0.9.0
 
 - refactor: remove all features specific to Raspberry Pi, now it is a general headless

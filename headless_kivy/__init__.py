@@ -246,7 +246,7 @@ class HeadlessWidget(Widget):
 
         HeadlessWidget.raw_data[self.x : self.x + self.width][
             self.y : self.y + self.height
-        ] = data
+        ] = data.reshape(self.width, self.height, -1)
 
         thread = Thread(
             target=config.callback(),
