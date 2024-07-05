@@ -22,6 +22,7 @@ def write_image(image_path: Path, array: NDArray) -> None:
     import png
 
     png.Writer(
+        alpha=False,
         width=array.shape[0],
         height=array.shape[1],
         greyscale=False,  # pyright: ignore [reportArgumentType]

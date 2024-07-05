@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.9.2
+
+- fix: apply rotations and flips and drop alpha channel on data before storing it
+  in `raw_data`
+
 ## Version 0.9.1
 
 - fix: consider alpha channel in the data stored in `raw_data` field of `HeadlessWidget`

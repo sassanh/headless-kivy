@@ -244,9 +244,16 @@ class HeadlessWidget(Widget):
         except Empty:
             last_thread = None
 
+        data = data.reshape(self.width, self.height, -1)[:, :, :3].astype(np.uint16)
+        data = np.rot90(data, config.rotation())
+        if config.flip_horizontal():
+            data = np.fliplr(data)
+        if config.flip_vertical():
+            data = np.flipud(data)
+
         HeadlessWidget.raw_data[self.x : self.x + self.width][
             self.y : self.y + self.height
-        ] = data.reshape(self.width, self.height, -1)
+        ] = data
 
         thread = Thread(
             target=config.callback(),

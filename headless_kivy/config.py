@@ -104,12 +104,10 @@ def setup_headless_kivy(config: SetupHeadlessConfig) -> None:
 be higher than 'max_fps' which is set to '{max_fps()}'."""
         raise ValueError(msg)
 
-    from kivy.metrics import dp
-
     from headless_kivy import HeadlessWidget
 
     HeadlessWidget.raw_data = np.zeros(
-        (int(dp(width())), int(dp(height())), 4),
+        (width(), height(), 3),
         dtype=np.uint8,
     )
 
