@@ -22,14 +22,14 @@ def write_image(image_path: Path, array: NDArray) -> None:
     import png
 
     png.Writer(
-        alpha=False,
+        alpha=True,
         width=array.shape[0],
         height=array.shape[1],
         greyscale=False,  # pyright: ignore [reportArgumentType]
         bitdepth=8,
     ).write(
         image_path.open('wb'),
-        array.reshape(-1, array.shape[0] * 3).tolist(),
+        array.reshape(-1, array.shape[0] * 4).tolist(),
     )
 
 

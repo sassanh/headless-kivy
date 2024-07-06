@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.4
+
+- refactor: update snapshot fixture with latest changes
+
 ## Version 0.9.3
 
 - refactor: migrate from `uint16` to `uint8` as each channel of the RGB image is
