@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, NoReturn, NotRequired, Protocol, TypedDict
 import kivy
 import numpy as np
 from kivy.config import Config
+from kivy.metrics import dp
 
 from headless_kivy.constants import (
     AUTOMATIC_FPS,
@@ -107,7 +108,9 @@ be higher than 'max_fps' which is set to '{max_fps()}'."""
     from headless_kivy import HeadlessWidget
 
     HeadlessWidget.raw_data = np.zeros(
-        (width(), height(), 3),
+        (int(dp(height())), int(dp(width())), 4)
+        if rotation() % 2 == 0
+        else (int(dp(width())), int(dp(height())), 4),
         dtype=np.uint8,
     )
 
@@ -125,7 +128,7 @@ class Callback(Protocol):
         self: Callback,
         *,
         rectangle: tuple[int, int, int, int],
-        data: NDArray[np.uint16],
+        data: NDArray[np.uint8],
         data_hash: int,
         last_render_thread: Thread,
     ) -> None:

@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 0.9.3
+
+- refactor: migrate from `uint16` to `uint8` as each channel of the RGB image is
+  a single byte
+- feat: add alpha channel ... yet again
+- feat: add a demo app based on the code provided [here](https://github.com/sassanh/headless-kivy/issues/13#issuecomment-2211547084)
+- fix: the order of width and height in different places so that it works when the
+  screen is not a square - closes #12, closes #13
+
 ## Version 0.9.2
 
 - fix: apply rotations and flips and drop alpha channel on data before storing it

@@ -39,6 +39,15 @@ if TYPE_CHECKING:
     from numpy._typing import NDArray
 
 
+def apply_tranformations(data: NDArray[np.uint8]) -> NDArray[np.uint8]:
+    data = np.rot90(data, config.rotation())
+    if config.flip_horizontal():
+        data = np.fliplr(data)
+    if config.flip_vertical():
+        data = np.flipud(data)
+    return data
+
+
 class HeadlessWidget(Widget):
     """Headless Kivy widget class rendering on SPI connected display."""
 
@@ -224,7 +233,7 @@ class HeadlessWidget(Widget):
                             config.width(),
                             config.height(),
                             -1,
-                        )[::-1, :, :3]
+                        )
                         .flatten()
                         .tolist(),
                     ),
@@ -244,16 +253,21 @@ class HeadlessWidget(Widget):
         except Empty:
             last_thread = None
 
-        data = data.reshape(self.width, self.height, -1)[:, :, :3].astype(np.uint16)
-        data = np.rot90(data, config.rotation())
-        if config.flip_horizontal():
-            data = np.fliplr(data)
-        if config.flip_vertical():
-            data = np.flipud(data)
+        data = data.reshape(self.height, self.width, -1)
+        data = apply_tranformations(data)
 
-        HeadlessWidget.raw_data[self.x : self.x + self.width][
-            self.y : self.y + self.height
-        ] = data
+        if config.rotation() % 2 == 0:
+            HeadlessWidget.raw_data[
+                self.y : self.y + self.height,
+                self.x : self.x + self.width,
+                :,
+            ] = data
+        else:
+            HeadlessWidget.raw_data[
+                self.x : self.x + self.width,
+                self.y : self.y + self.height,
+                :,
+            ] = data
 
         thread = Thread(
             target=config.callback(),

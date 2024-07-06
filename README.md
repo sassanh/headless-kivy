@@ -68,7 +68,7 @@ have this signature:
 def render(
     *,
     rectangle: tuple[int, int, int, int],
-    data: NDArray[np.uint16],
+    data: NDArray[np.uint8],
     data_hash: int,
     last_render_thread: Thread,
 ) -> None: ...
@@ -77,7 +77,7 @@ def render(
 `rectangle` is a tuple with the coordinates and size of the changed area in the
 `(x, y, width, height)` format.
 
-`data` is a numpy array with the screen RGB data in the `uint16` format. So its
+`data` is a numpy array with the screen RGB data in the `uint8` format. So its
 dimensions are `(width, height, 3)`.
 
 `data_hash` is probably not very useful for most cases, it is mostly for logging
