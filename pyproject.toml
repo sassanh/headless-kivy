@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "headless-kivy"
-version = "0.9.4"
+version = "0.9.5"
 description = "Headless renderer for Kivy framework"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"

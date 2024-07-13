@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.5
+
+- refactor: set minimum version of `kivy` to `2.1.0` (used to be `2.3.0`)
+
 ## Version 0.9.4
 
 - refactor: update snapshot fixture with latest changes
