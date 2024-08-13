@@ -253,26 +253,29 @@ class HeadlessWidget(Widget):
         except Empty:
             last_thread = None
 
-        data = data.reshape(self.height, self.width, -1)
+        height = int(self.height)
+        width = int(self.width)
+
+        data = data.reshape(height, width, -1)
         data = apply_tranformations(data)
 
         if config.rotation() % 2 == 0:
             HeadlessWidget.raw_data[
-                self.y : self.y + self.height,
-                self.x : self.x + self.width,
+                self.y : self.y + height,
+                self.x : self.x + width,
                 :,
             ] = data
         else:
             HeadlessWidget.raw_data[
-                self.x : self.x + self.width,
-                self.y : self.y + self.height,
+                self.x : self.x + width,
+                self.y : self.y + height,
                 :,
             ] = data
 
         thread = Thread(
             target=config.callback(),
             kwargs={
-                'rectangle': (self.x, self.y, self.width, self.height),
+                'rectangle': (self.x, self.y, width, height),
                 'data': data,
                 'data_hash': data_hash,
                 'last_render_thread': last_thread,

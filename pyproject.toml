@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "headless-kivy"
-version = "0.9.5"
+version = "0.9.6"
 description = "Headless renderer for Kivy framework"
 authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
@@ -21,6 +21,7 @@ pypng = { version = "^0.20220715.0", optional = true }
 python-strtobool = "^1.0.0"
 
 [tool.poetry.extras]
+default = []
 test = ['pypng']
 
 [tool.poetry.group.dev.dependencies]
