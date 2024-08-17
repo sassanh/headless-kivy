@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.9.7
+
+- fix: slice the data in case it exceeds the size of the display
+
 ## Version 0.9.6
 
 - fix: make it compatible with kivy 3

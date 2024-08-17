@@ -152,13 +152,13 @@ class WindowSnapshot:
             assert not hash_path.exists(), f'Snapshot {filename} not taken'
 
 
-@pytest.fixture()
+@pytest.fixture
 def snapshot_prefix() -> str | None:
     """Return the prefix for the snapshots."""
     return None
 
 
-@pytest.fixture()
+@pytest.fixture
 def window_snapshot(
     request: SubRequest,
     snapshot_prefix: str | None,

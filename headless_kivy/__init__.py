@@ -28,6 +28,7 @@ from kivy.graphics.fbo import Fbo
 from kivy.graphics.gl_instructions import ClearBuffers, ClearColor
 from kivy.graphics.instructions import Canvas
 from kivy.graphics.vertex_instructions import Rectangle
+from kivy.metrics import dp
 from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 
@@ -253,10 +254,11 @@ class HeadlessWidget(Widget):
         except Empty:
             last_thread = None
 
-        height = int(self.height)
-        width = int(self.width)
+        height = min(int(self.height), dp(config.height()) - self.y)
+        width = min(int(self.width), dp(config.width()) - self.x)
 
-        data = data.reshape(height, width, -1)
+        data = data.reshape(int(self.height), int(self.width), -1)
+        data = data[:height, :width, :]
         data = apply_tranformations(data)
 
         if config.rotation() % 2 == 0:

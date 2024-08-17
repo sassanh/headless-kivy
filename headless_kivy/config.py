@@ -79,9 +79,6 @@ def setup_headless_kivy(config: SetupHeadlessConfig) -> None:
     ---------
     config: `SetupHeadlessConfig`
 
-    splash_screen: `bytes`
-        it should have a length of `width` x `height` x 2
-
     """
     global _config  # noqa: PLW0603
     _config = config
