@@ -254,8 +254,8 @@ class HeadlessWidget(Widget):
         except Empty:
             last_thread = None
 
-        height = min(int(self.height), dp(config.height()) - self.y)
-        width = min(int(self.width), dp(config.width()) - self.x)
+        height = int(min(self.height, dp(config.height()) - self.y))
+        width = int(min(self.width, dp(config.width()) - self.x))
 
         data = data.reshape(int(self.height), int(self.width), -1)
         data = data[:height, :width, :]
