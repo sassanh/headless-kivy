@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 """Demonstrate the usage of the HeadlessWidget class."""
 
 from __future__ import annotations
@@ -52,11 +53,11 @@ config.setup_headless_kivy(
     },
 )
 
-from kivy.app import App  # noqa: E402
-from kivy.graphics.context_instructions import Color  # noqa: E402
-from kivy.graphics.vertex_instructions import Rectangle  # noqa: E402
-from kivy.uix.gridlayout import GridLayout  # noqa: E402
-from kivy.uix.label import Label  # noqa: E402
+from kivy.app import App
+from kivy.graphics.context_instructions import Color
+from kivy.graphics.vertex_instructions import Rectangle
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
 
 
 class FboGridLayout(GridLayout, HeadlessWidget):

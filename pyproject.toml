@@ -1,38 +1,58 @@
-[tool.poetry]
+[project]
 name = "headless-kivy"
-version = "0.9.8"
+dynamic = ["version"]
 description = "Headless renderer for Kivy framework"
-authors = ["Sassan Haradji <sassanh@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
+requires-python = ">=3.11"
+keywords = ['kivy', 'headless', 'display', 'pytest', 'test']
+dependencies = [
+  "numpy >= 1.24.2",
+  "kivy >= 2.2.1",
+  "pypng >= 0.20220715.0",
+  "python-strtobool >= 1.0.0",
+]
+
+[project.urls]
 homepage = 'https://github.com/sassanh/headless-kivy/'
 repository = 'https://github.com/sassanh/headless-kivy/'
-keywords = ['kivy', 'headless', 'display', 'pytest', 'test']
-packages = [{ include = "headless_kivy" }, { include = "headless_kivy_pytest" }]
+documentation = 'https://github.com/sassanh/headless-kivy/'
+changelog = 'https://github.com/sassanh/headless-kivy/blob/main/CHANGELOG.md'
 
-[tool.poetry.dependencies]
-python = "^3.11"
-typing-extensions = "^4.8.0"
-
-numpy = { version = "^1.24.2" }
-kivy = { version = "^2.2.1" }
-
-pypng = { version = "^0.20220715.0", optional = true }
-python-strtobool = "^1.0.0"
-
-[tool.poetry.extras]
-default = []
-test = ['pypng']
-
-[tool.poetry.group.dev.dependencies]
-poethepoet = "^0.24.2"
-ruff = "^0.6.1"
-pyright = "^1.1.376"
-pytest = "^8.2.2"
+[tool.uv]
+dev-dependencies = [
+  "poethepoet >= 0.24.4",
+  "pyright >= 1.1.376",
+  "ruff >= 0.6.0",
+  "pytest >= 8.1.1",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "headless_kivy/_version.py"
+
+[tool.hatch.version.raw-options]
+local_scheme = "setup_scm_schemes:local_scheme"
+
+[tool.hatch.build]
+packages = ["headless_kivy", "headless_kivy_pytest"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["headless_kivy", "headless_kivy_pytest"]
+
+[[project.authors]]
+name = "Sassan Haradji"
+email = "sassanh@gmail.com"
+
+[project.scripts]
+demo = "demo:main"
+todo_demo = "todo_demo:main"
 
 [tool.poe.tasks]
 lint = "ruff check . --unsafe-fixes"
@@ -40,10 +60,13 @@ typecheck = "pyright -p pyproject.toml ."
 sanity = ["typecheck", "lint"]
 
 [tool.ruff]
-lint.select = ['ALL']
-lint.ignore = ['INP001', 'PLR0911', 'D203', 'D213']
-lint.fixable = ['ALL']
-lint.unfixable = []
+target-version = 'py311'
+
+[tool.ruff.lint]
+select = ['ALL']
+ignore = ['INP001', 'PLR0911', 'D203', 'D213']
+fixable = ['ALL']
+unfixable = []
 
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
@@ -61,4 +84,19 @@ quote-style = 'single'
 profile = "black"
 
 [tool.pyright]
-exclude = ['typings']
+exclude = ['typings', '.venv']
+filterwarnings = 'error'
+
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
+
+[tool.coverage.run]
+source = ['headless_kivy', 'headless_kivy_pytest']
+omit = [
+  'headless_kivy_pytest/plugin.py',
+  'headless_kivy/_version.py',
+  "setup_scm_schemes.py",
+]
+
+[project.entry-points.pytest11]
+headless_kivy = "headless_kivy_pytest.plugin"

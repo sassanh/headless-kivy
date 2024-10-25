@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- chore: migrate from poetry to uv for the sake of improving performance and dealing with conflicting sub-dependencies
+
 ## Version 0.9.8
 
 - fix: an error in data slicing causing failure when HDMI display is connected

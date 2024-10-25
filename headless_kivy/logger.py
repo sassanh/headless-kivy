@@ -1,4 +1,5 @@
-# ruff: noqa: D100, D101, D102, D103, D104, D107
+"""Logging configuration for headless-kivy."""
+
 import logging
 import sys
 
@@ -8,6 +9,7 @@ logger.propagate = False
 
 
 def add_stdout_handler() -> None:
+    """Add a stdout handler to the logger."""
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setLevel(logging.DEBUG)
     stdout_handler.setFormatter(
@@ -20,6 +22,7 @@ def add_stdout_handler() -> None:
 
 
 def add_file_handler() -> None:
+    """Add a file handler to the logger."""
     file_handler = logging.FileHandler('headless-kivy.log')
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
