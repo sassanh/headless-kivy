@@ -1,10 +1,10 @@
-"""Implement a Kivy widget that renders everything to SPI display while being headless.
+"""Implement a Kivy widget that renders everything in memory.
 
 * IMPORTANT: You need to run `setup_headless` function before instantiating
 `HeadlessWidget`.
 
-A Kivy widget that renders itself on a display connected to the SPI controller of RPi.
-It doesn't create any window in any display manager (a.k.a "headless").
+A Kivy widget rendered in memory which doesn't create any window in any display manager
+(a.k.a "headless").
 
 When no animation is running, you can drop fps to `min_fps` by calling
 `activate_low_fps_mode`.
@@ -50,7 +50,7 @@ def apply_tranformations(data: NDArray[np.uint8]) -> NDArray[np.uint8]:
 
 
 class HeadlessWidget(Widget):
-    """Headless Kivy widget class rendering on SPI connected display."""
+    """A Kivy widget that renders everything in memory."""
 
     _is_setup_headless_called: bool = False
     should_ignore_hash: bool = False
@@ -193,8 +193,8 @@ class HeadlessWidget(Widget):
         self.render()
         Clock.schedule_once(lambda _: self._activate_low_fps_mode(), 0)
 
-    def render_on_display(self: HeadlessWidget, *_: object) -> None:
-        """Render the widget on display connected to the SPI controller."""
+    def render_on_display(self: HeadlessWidget, *_: object) -> None:  # noqa: C901
+        """Render the current frame on the display."""
         # Log the number of skipped and rendered frames in the last second
         if config.is_debug_mode():
             # Increment rendered_frames/skipped_frames count every frame and reset their
@@ -225,21 +225,6 @@ class HeadlessWidget(Widget):
             # Considering the content has not changed, this frame can safely be ignored
             return
 
-        if config.is_debug_mode():
-            self.rendered_frames += 1
-            with Path('headless_kivy_buffer.raw').open('wb') as file:
-                file.write(
-                    bytes(
-                        data.reshape(
-                            config.width(),
-                            config.height(),
-                            -1,
-                        )
-                        .flatten()
-                        .tolist(),
-                    ),
-                )
-
         self.should_ignore_hash = False
 
         self.last_change = time.time()
@@ -254,25 +239,32 @@ class HeadlessWidget(Widget):
         except Empty:
             last_thread = None
 
-        height = int(min(self.height, dp(config.height()) - self.y))
-        width = int(min(self.width, dp(config.width()) - self.x))
+        height = int(min(self.texture.height, dp(config.height()) - self.y))
+        width = int(min(self.texture.width, dp(config.width()) - self.x))
 
-        data = data.reshape(int(self.height), int(self.width), -1)
+        data = data.reshape(int(self.texture.height), int(self.texture.width), -1)
         data = data[:height, :width, :]
         data = apply_tranformations(data)
+        x, y = int(self.x), int(dp(config.height()) - self.y - self.height)
+
+        if config.is_debug_mode():
+            self.rendered_frames += 1
+            raw_file_path = Path('headless_kivy_buffer.raw')
+
+            if not raw_file_path.exists():
+                with raw_file_path.open('wb') as file:
+                    file.write(
+                        b'\x00' * int(dp(config.width()) * dp(config.height()) * 4),
+                    )
+            with raw_file_path.open('r+b') as file:
+                for i in range(height):
+                    file.seek(int((x + (y + i) * dp(config.width())) * 4))
+                    file.write(bytes(data[i, :, :].flatten().tolist()))
 
         if config.rotation() % 2 == 0:
-            HeadlessWidget.raw_data[
-                self.y : self.y + height,
-                self.x : self.x + width,
-                :,
-            ] = data
+            HeadlessWidget.raw_data[y : y + height, x : x + width, :] = data
         else:
-            HeadlessWidget.raw_data[
-                self.x : self.x + width,
-                self.y : self.y + height,
-                :,
-            ] = data
+            HeadlessWidget.raw_data[x : x + width, y : y + height, :] = data
 
         thread = Thread(
             target=config.callback(),

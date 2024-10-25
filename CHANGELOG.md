@@ -3,6 +3,7 @@
 ## Upcoming
 
 - chore: migrate from poetry to uv for the sake of improving performance and dealing with conflicting sub-dependencies
+- refactor: make it ready to be used for local widgets
 
 ## Version 0.9.8
 
