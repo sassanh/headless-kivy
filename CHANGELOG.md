@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- fix: avoid rendering nested `HeadlessWidget`s and avoid triggering rerender of the parent `HeadlessWidget` when a nested `HeadlessWidget` is rendered
+
 ## Version 0.10.1
 
 - chore: set dependencies for `[test]` extra

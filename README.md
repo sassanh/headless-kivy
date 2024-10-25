@@ -14,13 +14,10 @@ the last rendered frame.
 pip install headless-kivy
 ```
 
-To work on a non-RPi environment, run this:
+To use its test tools, you can install it with the following command:
 
 ```sh
-# pip:
 pip install headless-kivy[dev]
-# poetry:
-poetry --group dev headless-kivy
 ```
 
 ## 🛠 Usage
@@ -131,13 +128,12 @@ If set to `True`, it will flip the display vertically.
 
 ## 🤝 Contributing
 
-You need to have [Poetry](https://python-poetry.org/) installed on your machine.
+You need to have [uv](https://github.com/astral-sh/uv) installed on your machine.
 
-After having poetry, to install the required dependencies, run the following command
-in the root directory of the project:
+To install the required dependencies, run the following command in the root directory of the project:
 
 ```sh
-poetry install
+uv sync
 ```
 
 ## ⚠️ Important Note

@@ -26,7 +26,6 @@ from kivy.clock import Clock
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.fbo import Fbo
 from kivy.graphics.gl_instructions import ClearBuffers, ClearColor
-from kivy.graphics.instructions import Canvas
 from kivy.graphics.vertex_instructions import Rectangle
 from kivy.metrics import dp
 from kivy.properties import ObjectProperty
@@ -86,11 +85,9 @@ class HeadlessWidget(Widget):
         self.last_change = time.time()
         self.fps = config.max_fps()
 
-        self.canvas = Canvas()
-        with self.canvas:
-            self.fbo = Fbo(size=self.size, with_stencilbuffer=True)
-            self.fbo_color = Color(1, 1, 1, 1)
-            self.fbo_rect = Rectangle()
+        self.canvas = self.fbo = Fbo(size=self.size, with_stencilbuffer=True)
+        self.fbo_color = Color(1, 1, 1, 1)
+        self.fbo_rect = Rectangle()
 
         with self.fbo:
             ClearColor(0, 0, 0, 0)
@@ -113,28 +110,6 @@ class HeadlessWidget(Widget):
 
         if app:
             app.bind(on_stop=clear)
-
-    def add_widget(
-        self: HeadlessWidget,
-        *args: object,
-        **kwargs: object,
-    ) -> None:
-        """Extend `Widget.add_widget` and handle `canvas`."""
-        canvas = self.canvas
-        self.canvas = self.fbo
-        super().add_widget(*args, **kwargs)
-        self.canvas = canvas
-
-    def remove_widget(
-        self: HeadlessWidget,
-        *args: object,
-        **kwargs: object,
-    ) -> None:
-        """Extend `Widget.remove_widget` and handle `canvas`."""
-        canvas = self.canvas
-        self.canvas = self.fbo
-        super().remove_widget(*args, **kwargs)
-        self.canvas = canvas
 
     def on_size(
         self: HeadlessWidget,
@@ -269,7 +244,7 @@ class HeadlessWidget(Widget):
         thread = Thread(
             target=config.callback(),
             kwargs={
-                'rectangle': (self.x, self.y, width, height),
+                'rectangle': (x, y, x + width - 1, y + height - 1),
                 'data': data,
                 'data_hash': data_hash,
                 'last_render_thread': last_thread,
