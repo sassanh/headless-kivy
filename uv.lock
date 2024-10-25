@@ -84,13 +84,17 @@ wheels = [
 
 [[package]]
 name = "headless-kivy"
-version = "0.9.9.dev0+unknown"
+version = "0.10.1.dev1+unknown"
 source = { editable = "." }
 dependencies = [
     { name = "kivy" },
     { name = "numpy" },
-    { name = "pypng" },
     { name = "python-strtobool" },
+]
+
+[package.optional-dependencies]
+test = [
+    { name = "pypng" },
 ]
 
 [package.dev-dependencies]
@@ -104,17 +108,17 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "kivy", specifier = ">=2.2.1" },
-    { name = "numpy", specifier = ">=1.24.2" },
-    { name = "pypng", specifier = ">=0.20220715.0" },
+    { name = "numpy", specifier = ">=2.0.0" },
+    { name = "pypng", marker = "extra == 'test'", specifier = ">=0.20220715.0" },
     { name = "python-strtobool", specifier = ">=1.0.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "poethepoet", specifier = ">=0.24.4" },
-    { name = "pyright", specifier = ">=1.1.376" },
-    { name = "pytest", specifier = ">=8.1.1" },
-    { name = "ruff", specifier = ">=0.6.0" },
+    { name = "poethepoet", specifier = ">=0.29.0" },
+    { name = "pyright", specifier = ">=1.1.386" },
+    { name = "pytest", specifier = ">=8.3.3" },
+    { name = "ruff", specifier = ">=0.7.1" },
 ]
 
 [[package]]

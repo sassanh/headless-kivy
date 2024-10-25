@@ -59,6 +59,7 @@ jobs:
       - name: Create virtualenv
         run: |
           uv venv --system-site-packages
+          uv sync --extra test
 
       - name: Create stub files
         run: |

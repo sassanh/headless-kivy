@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- chore: set dependencies for `[test]` extra
+
 ## Version 0.10.0
 
 - chore: migrate from poetry to uv for the sake of improving performance and dealing with conflicting sub-dependencies
