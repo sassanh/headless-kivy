@@ -14,13 +14,10 @@ the last rendered frame.
 pip install headless-kivy
 ```
 
-To work on a non-RPi environment, run this:
+To use its test tools, you can install it with the following command:
 
 ```sh
-# pip:
 pip install headless-kivy[dev]
-# poetry:
-poetry --group dev headless-kivy
 ```
 
 ## 🛠 Usage
@@ -32,14 +29,11 @@ poetry --group dev headless-kivy
 
    ```python
    setup_headless(
-       min_fps=1,
-       max_fps=30,
        width=240,
        height=240,
        is_debug_mode=False,
        display_class=ST7789,
        double_buffering=True,
-       automatic_fps=True,
    )
    ```
 
@@ -86,14 +80,6 @@ and debugging purposes.
 It always runs in a new thread, the previous thread is provided so that it can call
 its `join` if desired.
 
-#### `min_fps`
-
-Minimum frames per second for when the Kivy application is idle.
-
-#### `max_fps`
-
-Maximum frames per second for the Kivy application.
-
 #### `width`
 
 The width of the display in pixels.
@@ -111,12 +97,6 @@ If set to True, the application will print debug information, including FPS.
 Is set to `True`, it will let Kivy generate the next frame while sending the last
 frame to the display.
 
-#### `automatic_fps`
-
-If set to `True`, it will monitor the hash of the screen data, if this hash changes,
-it will increase the fps to the maximum and if the hash doesn't change for a while,
-it will drop the fps to the minimum.
-
 #### `rotation`
 
 The rotation of the display. It will be multiplied by 90 degrees.
@@ -131,13 +111,12 @@ If set to `True`, it will flip the display vertically.
 
 ## 🤝 Contributing
 
-You need to have [Poetry](https://python-poetry.org/) installed on your machine.
+You need to have [uv](https://github.com/astral-sh/uv) installed on your machine.
 
-After having poetry, to install the required dependencies, run the following command
-in the root directory of the project:
+To install the required dependencies, run the following command in the root directory of the project:
 
 ```sh
-poetry install
+uv sync
 ```
 
 ## ⚠️ Important Note

@@ -25,11 +25,10 @@ def render(
     *,
     rectangle: tuple[int, int, int, int],
     data: NDArray[np.uint8],
-    data_hash: int,
     last_render_thread: Thread,
 ) -> None:
     """Render the data to a png file."""
-    _ = rectangle, data_hash, last_render_thread
+    _ = rectangle, last_render_thread
     with Path('demo.png').open('wb') as file:
         png.Writer(
             alpha=True,

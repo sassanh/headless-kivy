@@ -12,12 +12,9 @@ from kivy.config import Config
 from kivy.metrics import dp
 
 from headless_kivy.constants import (
-    AUTOMATIC_FPS,
     DOUBLE_BUFFERING,
     HEIGHT,
     IS_DEBUG_MODE,
-    MAX_FPS,
-    MIN_FPS,
     WIDTH,
 )
 from headless_kivy.logger import add_file_handler, add_stdout_handler
@@ -35,10 +32,6 @@ class SetupHeadlessConfig(TypedDict):
 
     """The callback function that will render the data to the screen."""
     callback: Callback
-    """Minimum frames per second for when the Kivy application is idle."""
-    min_fps: NotRequired[int]
-    """Maximum frames per second for the Kivy application."""
-    max_fps: NotRequired[int]
     """The width of the display in pixels."""
     width: NotRequired[int]
     """The height of the display in pixels."""
@@ -49,10 +42,6 @@ class SetupHeadlessConfig(TypedDict):
     """Is set to `True`, it will let Kivy to generate the next frame while sending the
     last frame to the display."""
     double_buffering: NotRequired[bool]
-    """If set to `True`, it will monitor the hash of the screen data, if this hash
-    changes, it will increase the fps to the maximum and if the hash doesn't change for
-    a while, it will drop the fps to the minimum."""
-    automatic_fps: NotRequired[bool]
     """The rotation of the display clockwise, it will be multiplied by 90."""
     rotation: NotRequired[int]
     """Whether the screen should be flipped horizontally or not"""
@@ -87,20 +76,9 @@ def setup_headless_kivy(config: SetupHeadlessConfig) -> None:
         add_stdout_handler()
         add_file_handler()
 
-    Config.set('kivy', 'kivy_clock', 'default')
     Config.set('graphics', 'fbo', 'force-hardware')
-    Config.set('graphics', 'fullscreen', '0')
-    Config.set('graphics', 'maxfps', f'{max_fps()}')
-    Config.set('graphics', 'multisamples', '1')
-    Config.set('graphics', 'resizable', '0')
-    Config.set('graphics', 'vsync', '0')
     Config.set('graphics', 'width', f'{width()}')
     Config.set('graphics', 'height', f'{height()}')
-
-    if min_fps() > max_fps():
-        msg = f"""Invalid value "{min_fps()}" for "min_fps", it can't \
-be higher than 'max_fps' which is set to '{max_fps()}'."""
-        raise ValueError(msg)
 
     from headless_kivy import HeadlessWidget
 
@@ -126,7 +104,6 @@ class Callback(Protocol):
         *,
         rectangle: tuple[int, int, int, int],
         data: NDArray[np.uint8],
-        data_hash: int,
         last_render_thread: Thread,
     ) -> None:
         """Render the data to the screen."""
@@ -137,22 +114,6 @@ def callback() -> Callback:
     """Return the render function, called whenever data is ready to be rendered."""
     if _config:
         return _config.get('callback', lambda **_: None)
-    report_uninitialized()
-
-
-@cache
-def min_fps() -> int:
-    """Return the minimum frames per second for when the Kivy application is idle."""
-    if _config:
-        return _config.get('min_fps', MIN_FPS)
-    report_uninitialized()
-
-
-@cache
-def max_fps() -> int:
-    """Return the maximum frames per second for the Kivy application."""
-    if _config:
-        return _config.get('max_fps', MAX_FPS)
     report_uninitialized()
 
 
@@ -185,14 +146,6 @@ def double_buffering() -> bool:
     """Generate the next frame while sending the last frame to the display."""
     if _config:
         return _config.get('double_buffering', DOUBLE_BUFFERING)
-    report_uninitialized()
-
-
-@cache
-def automatic_fps() -> bool:
-    """headless-kivy adjusts the FPS automatically."""
-    if _config:
-        return _config.get('automatic_fps', AUTOMATIC_FPS)
     report_uninitialized()
 
 

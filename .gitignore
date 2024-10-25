@@ -78,5 +78,8 @@ headless_kivy/_version.py
 # logs
 *.log
 
+# debug
+*.raw
+
 # demo
 demo.png

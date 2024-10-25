@@ -84,7 +84,7 @@ wheels = [
 
 [[package]]
 name = "headless-kivy"
-version = "0.10.1.dev1+unknown"
+version = "0.10.2.dev1+unknown"
 source = { editable = "." }
 dependencies = [
     { name = "kivy" },
@@ -108,7 +108,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "kivy", specifier = ">=2.2.1" },
-    { name = "numpy", specifier = ">=2.0.0" },
+    { name = "numpy", specifier = ">=1.24.2" },
     { name = "pypng", marker = "extra == 'test'", specifier = ">=0.20220715.0" },
     { name = "python-strtobool", specifier = ">=1.0.0" },
 ]
