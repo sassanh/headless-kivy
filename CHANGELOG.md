@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.10.1
 
 - chore: set dependencies for `[test]` extra
 
