@@ -54,7 +54,7 @@ class HeadlessWidget(Widget):
 
     raw_data: ClassVar[NDArray[np.uint8]]
 
-    def __init__(self: HeadlessWidget, **kwargs: dict[str, object]) -> None:
+    def __init__(self: HeadlessWidget, **kwargs: object) -> None:
         """Initialize a `HeadlessWidget`."""
         config.check_initialized()
 

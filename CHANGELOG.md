@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- fix: change type of `kwargs` in `HeadlessWidget.__init__` to `object`
+
 ## Version 0.11.0
 
 - refactor: drop all the fps handling and render scheduling logic in favor of `Canvas`'s `Callback` instruction which gets called only when new drawing is done
