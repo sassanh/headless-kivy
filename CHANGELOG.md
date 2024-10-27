@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.11.0
 
 - refactor: drop all the fps handling and render scheduling logic in favor of `Canvas`'s `Callback` instruction which gets called only when new drawing is done
 
