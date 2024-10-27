@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.11.1
 
 - fix: change type of `kwargs` in `HeadlessWidget.__init__` to `object`
 
