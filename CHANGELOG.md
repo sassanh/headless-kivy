@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.12.1
 
 - docs: update README.md with the new features
 
