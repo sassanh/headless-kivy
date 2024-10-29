@@ -6,13 +6,14 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, Self
 
+import numpy as np
 from kivy.metrics import dp
+from kivy.properties import BooleanProperty
 
 from headless_kivy import config
 from headless_kivy.logger import logger
 
 if TYPE_CHECKING:
-    import numpy as np
     from kivy.graphics.context_instructions import Color
     from kivy.graphics.fbo import Fbo
     from kivy.graphics.vertex_instructions import Rectangle
@@ -23,6 +24,7 @@ class DebugMixin:
     fbo: Fbo
     fbo_render_color: Color
     fbo_render_rectangle: Rectangle
+    show_update_regions = BooleanProperty(0)
 
     x: int
     y: int
@@ -56,9 +58,29 @@ class DebugMixin:
     def render_debug_info(
         self: Self,
         rect_: tuple[int, int, int, int],
-        _: list[tuple[int, int, int, int]],
+        regions: list[tuple[int, int, int, int]],
         data: NDArray[np.uint8],
     ) -> None:
+        if self.show_update_regions:
+            for rect in regions:
+                self.update_region_seed = (self.update_region_seed + 1) % 3
+                data[
+                    rect[1] : rect[3],
+                    rect[0] : rect[2],
+                    :,
+                ] = (
+                    data[
+                        rect[1] : rect[3],
+                        rect[0] : rect[2],
+                        :,
+                    ]
+                    * 0.5
+                ).astype(np.uint8)
+                data[
+                    rect[1] : rect[3],
+                    rect[0] : rect[2],
+                    [(rect[0] + rect[1] + self.update_region_seed) % 7 % 3, 3],
+                ] += 127
         if config.is_debug_mode():
             x1, y1, x2, y2 = rect_
             self.rendered_frames += 1

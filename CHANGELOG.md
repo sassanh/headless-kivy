@@ -4,6 +4,7 @@
 
 - feat: divide each frame into multiple rectangles, compare rectangle with the same rectangle in the previous frame and update only the changed ones
 - feat: add two throttling mechanisms to avoid sending too many frames to the display, one based on total bandwidth of all draw commands of all `HeadlessWidget`s and the other based on set fps of a particular `HeadlessWidget`
+- feat: add `show_update_regions` property to `HeadlessWidget` to show the regions that are updated in each frame as a debug feature
 
 ## Version 0.11.1
 
