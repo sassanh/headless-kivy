@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import functools
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -14,8 +13,6 @@ from headless_kivy import HeadlessWidget, config
 if TYPE_CHECKING:
     from threading import Thread
 
-    import numpy as np
-    from numpy._typing import NDArray
 
 WIDTH = 400
 HEIGHT = 240
@@ -23,12 +20,12 @@ HEIGHT = 240
 
 def render(
     *,
-    rectangle: tuple[int, int, int, int],
-    data: NDArray[np.uint8],
+    regions: list[config.Region],
     last_render_thread: Thread,
 ) -> None:
     """Render the data to a png file."""
-    _ = rectangle, last_render_thread
+    _ = last_render_thread
+    data = regions[0]['data']
     with Path('demo.png').open('wb') as file:
         png.Writer(
             alpha=True,
@@ -38,7 +35,7 @@ def render(
             bitdepth=8,
         ).write(
             file,
-            data.reshape(-1, data.shape[1] * 4).tolist(),
+            data.reshape(data.shape[0], -1).tolist(),
         )
 
 
@@ -48,13 +45,13 @@ config.setup_headless_kivy(
         'width': WIDTH,
         'height': HEIGHT,
         'flip_vertical': True,
-        'rotation': 1,
+        'rotation': 3,
     },
 )
 
 from kivy.app import App
 from kivy.graphics.context_instructions import Color
-from kivy.graphics.vertex_instructions import Rectangle
+from kivy.graphics.vertex_instructions import Ellipse
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 
@@ -75,18 +72,34 @@ class DemoApp(App):
         ):
             label = Label(text=f'Hello {index}')
 
-            def render(
-                label: Label,
-                *_: object,
-                color: tuple[float, float, float, float],
-            ) -> None:
-                with label.canvas.before:
-                    Color(*color)
-                    Rectangle(pos=label.pos, size=label.size)
+            with label.canvas.before:
+                Color(*color)
+                label.shape = Ellipse()
 
             label.bind(
-                size=functools.partial(render, color=color),
-                pos=functools.partial(render, color=color),
+                size=lambda label, *_: (
+                    setattr(
+                        label.shape,
+                        'size',
+                        (label.size[0] / 2, label.size[1] / 2),
+                    ),
+                    setattr(
+                        label.shape,
+                        'pos',
+                        (
+                            label.pos[0] + label.size[0] / 4,
+                            label.pos[1] + label.size[1] / 4,
+                        ),
+                    ),
+                ),
+                pos=lambda label, *_: setattr(
+                    label.shape,
+                    'pos',
+                    (
+                        label.pos[0] + label.size[0] / 4,
+                        label.pos[1] + label.size[1] / 4,
+                    ),
+                ),
             )
 
             fbg.add_widget(label)

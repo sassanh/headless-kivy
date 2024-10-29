@@ -13,8 +13,13 @@ from kivy.metrics import dp
 
 from headless_kivy.constants import (
     DOUBLE_BUFFERING,
+    FLIP_HORIZONTAL,
+    FLIP_VERTICAL,
     HEIGHT,
     IS_DEBUG_MODE,
+    MAX_FPS,
+    REGION_SIZE,
+    ROTATION,
     WIDTH,
 )
 from headless_kivy.logger import add_file_handler, add_stdout_handler
@@ -28,26 +33,46 @@ kivy.require('2.1.0')
 
 
 class SetupHeadlessConfig(TypedDict):
-    """Arguments of `setup_headless_kivy` function."""
+    """Arguments of `setup_headless_kivy` function.
 
-    """The callback function that will render the data to the screen."""
+    Attributes
+    ----------
+    callback: `Callback`
+        The callback function that will render the data to the screen.
+    max_fps: `int`, optional
+        Maximum frames per second for the Kivy application.
+    width: `int`, optional
+        The width of the display in pixels.
+    height: `int`, optional
+        The height of the display in pixels.
+    is_debug_mode: `bool`, optional
+        If set to True, the application will consume computational resources to log
+        additional debug information.
+    double_buffering: `bool`, optional
+        If set to True, it will let Kivy generate the next frame while sending the last
+        frame to the display.
+    rotation: `int`, optional
+        The rotation of the display clockwise, it will be multiplied by 90.
+    flip_horizontal: `bool`, optional
+        Whether the screen should be flipped horizontally or not.
+    flip_vertical: `bool`, optional
+        Whether the screen should be flipped vertically or not.
+    region_size: `int`, optional
+        Approximate size of rectangles to divide the screen into and see if they need to
+        be updated.
+
+    """
+
     callback: Callback
-    """The width of the display in pixels."""
+    max_fps: NotRequired[int]
     width: NotRequired[int]
-    """The height of the display in pixels."""
     height: NotRequired[int]
-    """If set to True, the application will consume computational resources to log
-    additional debug information."""
     is_debug_mode: NotRequired[bool]
-    """Is set to `True`, it will let Kivy to generate the next frame while sending the
-    last frame to the display."""
     double_buffering: NotRequired[bool]
-    """The rotation of the display clockwise, it will be multiplied by 90."""
     rotation: NotRequired[int]
-    """Whether the screen should be flipped horizontally or not"""
     flip_horizontal: NotRequired[bool]
-    """Whether the screen should be flipped vertically or not"""
     flip_vertical: NotRequired[bool]
+    region_size: NotRequired[int]
 
 
 _config: SetupHeadlessConfig | None = None
@@ -76,16 +101,20 @@ def setup_headless_kivy(config: SetupHeadlessConfig) -> None:
         add_stdout_handler()
         add_file_handler()
 
+    Config.set('kivy', 'kivy_clock', 'default')
     Config.set('graphics', 'fbo', 'force-hardware')
+    Config.set('graphics', 'fullscreen', '0')
+    Config.set('graphics', 'maxfps', f'{max_fps()}')
+    Config.set('graphics', 'multisamples', '1')
+    Config.set('graphics', 'resizable', '0')
+    Config.set('graphics', 'vsync', '0')
     Config.set('graphics', 'width', f'{width()}')
     Config.set('graphics', 'height', f'{height()}')
 
-    from headless_kivy import HeadlessWidget
+    from headless_kivy.widget import HeadlessWidget
 
     HeadlessWidget.raw_data = np.zeros(
-        (int(dp(height())), int(dp(width())), 4)
-        if rotation() % 2 == 0
-        else (int(dp(width())), int(dp(height())), 4),
+        (int(dp(height())), int(dp(width())), 4),
         dtype=np.uint8,
     )
 
@@ -96,14 +125,20 @@ def check_initialized() -> None:
         report_uninitialized()
 
 
+class Region(TypedDict):
+    """A region of the screen to be updated."""
+
+    rectangle: tuple[int, int, int, int]
+    data: NDArray[np.uint8]
+
+
 class Callback(Protocol):
     """The signature of the renderer function."""
 
     def __call__(
         self: Callback,
         *,
-        rectangle: tuple[int, int, int, int],
-        data: NDArray[np.uint8],
+        regions: list[Region],
         last_render_thread: Thread,
     ) -> None:
         """Render the data to the screen."""
@@ -114,6 +149,14 @@ def callback() -> Callback:
     """Return the render function, called whenever data is ready to be rendered."""
     if _config:
         return _config.get('callback', lambda **_: None)
+    report_uninitialized()
+
+
+@cache
+def max_fps() -> int:
+    """Return the maximum frames per second for the Kivy application."""
+    if _config:
+        return _config.get('max_fps', MAX_FPS)
     report_uninitialized()
 
 
@@ -153,7 +196,7 @@ def double_buffering() -> bool:
 def rotation() -> int:
     """Return the rotation of the display."""
     if _config:
-        return _config.get('rotation', 0)
+        return _config.get('rotation', ROTATION)
     report_uninitialized()
 
 
@@ -161,7 +204,7 @@ def rotation() -> int:
 def flip_horizontal() -> bool:
     """Return `True` if the display is flipped horizontally."""
     if _config:
-        return _config.get('flip_horizontal', False)
+        return _config.get('flip_horizontal', FLIP_HORIZONTAL)
     report_uninitialized()
 
 
@@ -169,5 +212,13 @@ def flip_horizontal() -> bool:
 def flip_vertical() -> bool:
     """Return `True` if the display is flipped vertically."""
     if _config:
-        return _config.get('flip_vertical', False)
+        return _config.get('flip_vertical', FLIP_VERTICAL)
+    report_uninitialized()
+
+
+@cache
+def region_size() -> int:
+    """Return the approximate size of rectangles to divide the screen into."""
+    if _config:
+        return _config.get('region_size', REGION_SIZE)
     report_uninitialized()

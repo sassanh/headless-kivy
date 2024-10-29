@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- feat: divide each frame into multiple rectangles, compare rectangle with the same rectangle in the previous frame and update only the changed ones
+
 ## Version 0.11.1
 
 - fix: change type of `kwargs` in `HeadlessWidget.__init__` to `object`
