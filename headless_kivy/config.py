@@ -40,11 +40,11 @@ class SetupHeadlessConfig(TypedDict):
     callback: `Callback`
         The callback function that will render the data to the screen.
     bandwidth_limit: `int`, optional
-        Maximum bandwidth limit in pixels per second, no limit if set to 0.
+        Maximum bandwidth usage in pixels per second, no limit if set to 0.
     bandwidth_limit_window: `float`, optional
-        Length of the window in seconds to check the bandwidth limit.
+        Length of the time window in seconds to check the bandwidth limit.
     bandwidth_limit_overhead: `int`, optional
-        Bandwidth overhead of each draw regardless of the region size.
+        The overhead of each draw command in pixels, regardless of its size.
     width: `int`, optional
         The width of the display in pixels.
     height: `int`, optional

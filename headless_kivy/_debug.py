@@ -65,20 +65,20 @@ class DebugMixin:
             for rect in regions:
                 self.update_region_seed = (self.update_region_seed + 1) % 3
                 data[
-                    rect[1] : rect[3],
                     rect[0] : rect[2],
+                    rect[1] : rect[3],
                     :,
                 ] = (
                     data[
-                        rect[1] : rect[3],
                         rect[0] : rect[2],
+                        rect[1] : rect[3],
                         :,
                     ]
                     * 0.5
                 ).astype(np.uint8)
                 data[
-                    rect[1] : rect[3],
                     rect[0] : rect[2],
+                    rect[1] : rect[3],
                     [(rect[0] + rect[1] + self.update_region_seed) % 7 % 3, 3],
                 ] += 127
         if config.is_debug_mode():

@@ -1,12 +1,18 @@
-# Kivy Headless Renderer
+# Headless Kivy
 
-This project provides utilities to render Kivy applications headlessly. It can be
-used in test environments, it also provides tools for snapshot testing.
-It can also be used on a Raspberry Pi or similar devices to render the Kivy application
-on a custom display like an SPI display.
+Provides utilities to render Kivy applications headlessly. It calls a callback whenever something has changed in the framebuffer in a locality.
 
-The renderer is optimized to not schedule a render when nothing has changed since
-the last rendered frame.
+It can be used to render the Kivy application on a custom display like an SPI display, it provides tools for local updates, limiting the bandwidth and limiting the fps based on the spec of the display.
+
+It can also be used in test environments with it tools for snapshot testing.
+
+You can control the orientation of the display and flipping the display horizontally and vertically.
+
+The renderer is optimized to not schedule a render when nothing has changed since the last rendered frame, by default it divides the screen into tiles and checks each tile for changes separately.
+
+It can be configured to use double buffering, so that the next frame is generated while the last frame is being transmitted to the display.
+
+You can have multiple instances of the headless renderer in the same application, each works as a portal to your display (or multiple different displays).
 
 ## 📦 Installation
 
@@ -17,7 +23,7 @@ pip install headless-kivy
 To use its test tools, you can install it with the following command:
 
 ```sh
-pip install headless-kivy[dev]
+pip install headless-kivy[test]
 ```
 
 ## 🛠 Usage
@@ -31,9 +37,13 @@ pip install headless-kivy[dev]
    setup_headless(
        width=240,
        height=240,
+       bandwidth_limit=1000000, # number of pixels per second
+       bandwidth_limit_window=.1, # allow bandwidth_limit x bandwidth_limit_window pixels to be transmitted in bandwidth_limit_window seconds
+       bandwidth_limit_overhead=1000, # each draw command, regardless of the size, has equivalent of this many pixels of cost in bandwidth
        is_debug_mode=False,
-       display_class=ST7789,
-       double_buffering=True,
+       rotation=1, # gets multiplied by 90 degrees
+       flip_horizontal=True,
+       double_buffering=True, # let headless kivy generate the next frame while the previous callback is still running
    )
    ```
 
@@ -79,6 +89,18 @@ and debugging purposes.
 
 It always runs in a new thread, the previous thread is provided so that it can call
 its `join` if desired.
+
+#### `bandwidth_limit`
+
+Maximum bandwidth usage in pixels per second, no limit if set to 0.
+
+#### `bandwidth_limit_window`
+
+Length of the time window in seconds to check the bandwidth limit.
+
+#### `bandwidth_limit_overhead`
+
+The overhead of each draw command in pixels, regardless of its size.
 
 #### `width`
 

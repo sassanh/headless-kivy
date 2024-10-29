@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- docs: update README.md with the new features
+
 ## Version 0.12.0
 
 - feat: divide each frame into multiple rectangles, compare rectangle with the same rectangle in the previous frame and update only the changed ones
