@@ -4,7 +4,13 @@ import os
 
 from str_to_bool import str_to_bool
 
-MAX_FPS = int(os.environ.get('HEADLESS_KIVY_MAX_FPS', '32'))
+BANDWIDTH_LIMIT = int(os.environ.get('HEADLESS_KIVY_BANDWIDTH_LIMIT', '0'))
+BANDWIDTH_LIMIT_WINDOW = float(
+    os.environ.get('HEADLESS_KIVY_BANDWIDTH_LIMIT_WINDOW', '1'),
+)
+BANDWIDTH_LIMIT_OVERHEAD = int(
+    os.environ.get('HEADLESS_KIVY_BANDWIDTH_LIMIT_OVERHEAD', '0'),
+)
 WIDTH = int(os.environ.get('HEADLESS_KIVY_WIDTH', '240'))
 HEIGHT = int(os.environ.get('HEADLESS_KIVY_HEIGHT', '240'))
 IS_DEBUG_MODE = str_to_bool(os.environ.get('HEADLESS_KIVY_DEBUG', 'False')) == 1

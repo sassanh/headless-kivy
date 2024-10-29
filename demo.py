@@ -4,15 +4,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import png
 
 from headless_kivy import HeadlessWidget, config
-
-if TYPE_CHECKING:
-    from threading import Thread
-
 
 WIDTH = 400
 HEIGHT = 240
@@ -21,10 +16,8 @@ HEIGHT = 240
 def render(
     *,
     regions: list[config.Region],
-    last_render_thread: Thread,
 ) -> None:
     """Render the data to a png file."""
-    _ = last_render_thread
     data = regions[0]['data']
     with Path('demo.png').open('wb') as file:
         png.Writer(

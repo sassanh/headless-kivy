@@ -43,7 +43,7 @@ def transform_coordinates(
 ) -> tuple[int, int, int, int]:
     """Transform the coordinates of a region."""
     y1, x1, y2, x2 = region[:4]
-    h, w = int(dp(config.width())), int(dp(config.height()))
+    w, h = int(dp(config.width())), int(dp(config.height()))
     positions = {
         0: (x1, y1, x2, y2),
         1: (y1, w - x2, y2, w - x1),

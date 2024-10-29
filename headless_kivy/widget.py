@@ -6,12 +6,15 @@
 
 from __future__ import annotations
 
+import contextlib
+import threading
 import time
 from queue import Empty, Queue
 from threading import Thread
 from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
+from kivy.clock import Clock
 from kivy.graphics.context_instructions import Color
 from kivy.graphics.fbo import Fbo
 from kivy.graphics.gl_instructions import ClearBuffers, ClearColor
@@ -21,7 +24,7 @@ from kivy.metrics import dp
 from kivy.properties import NumericProperty
 from kivy.uix.widget import Widget
 
-from headless_kivy import config
+from headless_kivy import config, logger
 from headless_kivy._debug import DebugMixin
 from headless_kivy.utils import (
     divide_into_regions,
@@ -30,13 +33,14 @@ from headless_kivy.utils import (
 )
 
 if TYPE_CHECKING:
+    from kivy._clock import ClockEvent
     from numpy._typing import NDArray
 
 
 class HeadlessWidget(Widget, DebugMixin):
     """A Kivy widget that renders everything in memory."""
 
-    fps = NumericProperty(0)
+    fps: int = NumericProperty(24)
 
     update_region_seed = 0
     last_second: int
@@ -44,9 +48,9 @@ class HeadlessWidget(Widget, DebugMixin):
     skipped_frames: int
 
     last_render: float
-    pending_render_threads: Queue[Thread]
+    scheduler: ClockEvent | None = None
+    render_queue: Queue[Thread]
 
-    previous_data: NDArray[np.uint8] | None = None
     previous_frame: NDArray[np.uint8] | None = None
     fbo: Fbo
     fbo_background_color: Color
@@ -56,6 +60,7 @@ class HeadlessWidget(Widget, DebugMixin):
     fbo_render_rectangle: Rectangle
 
     raw_data: ClassVar[NDArray[np.uint8]]
+    transfer_record: ClassVar[dict[float, int]] = {}
 
     def __init__(self: HeadlessWidget, **kwargs: object) -> None:
         """Initialize a `HeadlessWidget`."""
@@ -63,10 +68,8 @@ class HeadlessWidget(Widget, DebugMixin):
 
         __import__('kivy.core.window')
 
-        self.fps = config.max_fps()
-
         self.last_render = time.time()
-        self.pending_render_threads = Queue(2 if config.double_buffering() else 1)
+        self.render_queue = Queue(2 if config.double_buffering() else 1)
 
         self.canvas = Canvas()
         with self.canvas:
@@ -85,7 +88,7 @@ class HeadlessWidget(Widget, DebugMixin):
             ClearBuffers()
 
         with self.fbo.after:
-            Callback(self.render_on_display)
+            Callback(self.process_frame)
 
         super().__init__(**kwargs)
 
@@ -132,78 +135,138 @@ class HeadlessWidget(Widget, DebugMixin):
         if config.is_debug_mode():
             self.fbo_render_rectangle.pos = value
 
-    def render_on_display(self: HeadlessWidget, *_: object) -> None:
-        """Render the current frame on the display."""
-        data = np.frombuffer(self.fbo.texture.pixels, dtype=np.uint8)
-        if self.previous_data is not None and np.array_equal(data, self.previous_data):
+    def process_frame(self: HeadlessWidget, *_: object) -> None:
+        """Process the frame and render it on the display."""
+        self.set_debug_info()
+
+        if self.scheduler and self.scheduler.is_triggered:
+            self.scheduler.cancel()
+            if config.is_debug_mode():
+                self.skipped_frames += 1
+
+        now = time.time()
+        if now - self.last_render < 1 / self.fps:
+            self.scheduler = Clock.schedule_once(
+                self.process_frame,
+                1 / self.fps,
+            )
             return
-        self.last_render = time.time()
-        self.previous_data = data
-        # Render the current frame on the display asynchronously
-        try:
-            last_thread = self.pending_render_threads.get(False)
-        except Empty:
-            last_thread = None
 
-        x, y = int(self.x), int(self.y)
-        height = int(min(self.fbo.texture.height, dp(config.height()) - y))
-        width = int(min(self.fbo.texture.width, dp(config.width()) - x))
+        if self.render_queue.qsize() > (1 if config.double_buffering() else 0):
+            self.skipped_frames += 1
+            return
 
-        if x < 0:
-            width += x
-            x = 0
-        if y < 0:
-            height += y
-            y = 0
-
-        data = data.reshape(
+        data = np.frombuffer(self.fbo.texture.pixels, dtype=np.uint8).reshape(
             int(self.fbo.texture.height),
             int(self.fbo.texture.width),
             -1,
         )
+
+        x, y = max(int(self.x), 0), max(int(self.y), 0)
+        height = int(min(self.fbo.texture.height, dp(config.height()) - y))
+        width = int(min(self.fbo.texture.width, dp(config.width()) - x))
+
         data = data[:height, :width, :]
 
         mask = np.any(data != self.previous_frame, axis=2)
+        if not np.any(mask):
+            return
+
+        thread = Thread(
+            target=self.render,
+            kwargs={
+                'mask': mask,
+                'data': data,
+                'x': x,
+                'y': y,
+            },
+            daemon=False,
+        )
+        thread.start()
+
+    def render(
+        self: HeadlessWidget,
+        *,
+        mask: NDArray[np.bool_],
+        data: NDArray[np.uint8],
+        x: int,
+        y: int,
+    ) -> None:
+        """Render the current frame."""
+        height = data.shape[0]
+        width = data.shape[1]
+
         regions = divide_into_regions(mask)
 
-        alpha_mask = np.repeat(mask[:, :, np.newaxis], 4, axis=2)
+        if config.bandwidth_limit() != 0:
+            now = time.time()
+            size = sum(
+                [
+                    (region[2] - region[0]) * (region[3] - region[1])
+                    + config.bandwidth_limit_overhead()
+                    for region in regions
+                ],
+            )
+            HeadlessWidget.transfer_record = {
+                time: size
+                for time, size in HeadlessWidget.transfer_record.items()
+                if time > now - config.bandwidth_limit_window()
+            }
+            if (
+                sum(HeadlessWidget.transfer_record.values()) + size
+                > config.bandwidth_limit() * config.bandwidth_limit_window()
+            ):
+                logger.logger.debug(
+                    f"""postponing due to bandwidth limit, new pixels: {size} - limit: {
+                    config.bandwidth_limit() * config.bandwidth_limit_window()}""",
+                )
+                self.scheduler = Clock.schedule_once(
+                    self.process_frame,
+                    config.bandwidth_limit_window(),
+                )
+                return
+            HeadlessWidget.transfer_record[now] = size
+
+        self.last_render = time.time()
         self.previous_frame = data
+
+        alpha_mask = np.repeat(mask[:, :, np.newaxis], 4, axis=2)
+
         HeadlessWidget.raw_data[y : y + height, x : x + width, :][alpha_mask] = data[
             alpha_mask
         ]
-        chunk = transform_data(
-            HeadlessWidget.raw_data[y : y + height, x : x + width, :],
-        )
 
-        regions = [
-            (*transform_coordinates(region[:4]), *region[4:]) for region in regions
-        ]
+        chunk = transform_data(
+            HeadlessWidget.raw_data[y : y + height, x : x + width, :].copy(),
+        )
+        regions = [transform_coordinates(region) for region in regions]
+
         self.render_debug_info(
             (x, y, x + width, y + height),
             regions,
             chunk,
         )
 
-        thread = Thread(
-            target=config.callback(),
-            kwargs={
-                'regions': [
-                    {
-                        'rectangle': region[:4],
-                        'data': chunk[
-                            region[0] : region[2],
-                            region[1] : region[3],
-                            :,
-                        ],
-                    }
-                    for region in regions
-                ],
-                'last_render_thread': last_thread,
-            },
-            daemon=False,
+        last_thread = None
+        with contextlib.suppress(Empty):
+            last_thread = self.render_queue.get_nowait()
+        self.render_queue.put(threading.current_thread())
+        if last_thread:
+            last_thread.join()
+
+        config.callback()(
+            regions=[
+                {
+                    'rectangle': region,
+                    'data': chunk[
+                        region[0] : region[2],
+                        region[1] : region[3],
+                        :,
+                    ],
+                }
+                for region in regions
+            ],
         )
-        self.pending_render_threads.put(thread)
-        thread.start()
 
     @classmethod
     def get_instance(

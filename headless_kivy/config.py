@@ -12,12 +12,14 @@ from kivy.config import Config
 from kivy.metrics import dp
 
 from headless_kivy.constants import (
+    BANDWIDTH_LIMIT,
+    BANDWIDTH_LIMIT_OVERHEAD,
+    BANDWIDTH_LIMIT_WINDOW,
     DOUBLE_BUFFERING,
     FLIP_HORIZONTAL,
     FLIP_VERTICAL,
     HEIGHT,
     IS_DEBUG_MODE,
-    MAX_FPS,
     REGION_SIZE,
     ROTATION,
     WIDTH,
@@ -25,8 +27,6 @@ from headless_kivy.constants import (
 from headless_kivy.logger import add_file_handler, add_stdout_handler
 
 if TYPE_CHECKING:
-    from threading import Thread
-
     from numpy._typing import NDArray
 
 kivy.require('2.1.0')
@@ -39,8 +39,12 @@ class SetupHeadlessConfig(TypedDict):
     ----------
     callback: `Callback`
         The callback function that will render the data to the screen.
-    max_fps: `int`, optional
-        Maximum frames per second for the Kivy application.
+    bandwidth_limit: `int`, optional
+        Maximum bandwidth limit in pixels per second, no limit if set to 0.
+    bandwidth_limit_window: `float`, optional
+        Length of the window in seconds to check the bandwidth limit.
+    bandwidth_limit_overhead: `int`, optional
+        Bandwidth overhead of each draw regardless of the region size.
     width: `int`, optional
         The width of the display in pixels.
     height: `int`, optional
@@ -64,7 +68,9 @@ class SetupHeadlessConfig(TypedDict):
     """
 
     callback: Callback
-    max_fps: NotRequired[int]
+    bandwidth_limit: NotRequired[int]
+    bandwidth_limit_window: NotRequired[float]
+    bandwidth_limit_overhead: NotRequired[int]
     width: NotRequired[int]
     height: NotRequired[int]
     is_debug_mode: NotRequired[bool]
@@ -104,10 +110,7 @@ def setup_headless_kivy(config: SetupHeadlessConfig) -> None:
     Config.set('kivy', 'kivy_clock', 'default')
     Config.set('graphics', 'fbo', 'force-hardware')
     Config.set('graphics', 'fullscreen', '0')
-    Config.set('graphics', 'maxfps', f'{max_fps()}')
-    Config.set('graphics', 'multisamples', '1')
     Config.set('graphics', 'resizable', '0')
-    Config.set('graphics', 'vsync', '0')
     Config.set('graphics', 'width', f'{width()}')
     Config.set('graphics', 'height', f'{height()}')
 
@@ -135,12 +138,7 @@ class Region(TypedDict):
 class Callback(Protocol):
     """The signature of the renderer function."""
 
-    def __call__(
-        self: Callback,
-        *,
-        regions: list[Region],
-        last_render_thread: Thread,
-    ) -> None:
+    def __call__(self: Callback, *, regions: list[Region]) -> None:
         """Render the data to the screen."""
 
 
@@ -153,10 +151,26 @@ def callback() -> Callback:
 
 
 @cache
-def max_fps() -> int:
-    """Return the maximum frames per second for the Kivy application."""
+def bandwidth_limit() -> int:
+    """Return the bandwidth limit in pixels per second."""
     if _config:
-        return _config.get('max_fps', MAX_FPS)
+        return _config.get('bandwidth_limit', BANDWIDTH_LIMIT)
+    report_uninitialized()
+
+
+@cache
+def bandwidth_limit_window() -> float:
+    """Return the length of the window in seconds to check the bandwidth limit."""
+    if _config:
+        return _config.get('bandwidth_limit_window', BANDWIDTH_LIMIT_WINDOW)
+    report_uninitialized()
+
+
+@cache
+def bandwidth_limit_overhead() -> int:
+    """Return the bandwidth overhead of each draw regardless of the region size."""
+    if _config:
+        return _config.get('bandwidth_limit_overhead', BANDWIDTH_LIMIT_OVERHEAD)
     report_uninitialized()
 
 
