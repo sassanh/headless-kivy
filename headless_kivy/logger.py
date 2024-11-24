@@ -34,4 +34,4 @@ def add_file_handler() -> None:
     logger.addHandler(file_handler)
 
 
-__all__ = ('logger', 'add_stdout_handler', 'add_file_handler')
+__all__ = ('add_file_handler', 'add_stdout_handler', 'logger')

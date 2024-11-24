@@ -8,7 +8,11 @@ maintainers = [{ name = "Sassan Haradji", email = "me@sassanh.com" }]
 readme = "README.md"
 requires-python = ">=3.11"
 keywords = ['kivy', 'headless', 'display', 'pytest', 'test']
-dependencies = ["numpy >= 1.24.2", "kivy >= 2.2.1", "python-strtobool >= 1.0.0"]
+dependencies = [
+  "numpy >= 1.24.2, < 2.0.0",
+  "kivy >= 2.2.1",
+  "python-strtobool >= 1.0.0",
+]
 
 [project.optional-dependencies]
 test = ["pypng >= 0.20220715.0"]

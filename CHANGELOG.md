@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- fix: limit numpy version to \<2.0.0 to avoid breaking changes
+
 ## Version 0.12.1
 
 - docs: update README.md with the new features
