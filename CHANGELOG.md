@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.12.2
 
 - fix: limit numpy version to \<2.0.0 to avoid breaking changes
 
