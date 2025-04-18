@@ -6,10 +6,9 @@
 
 from __future__ import annotations
 
-import contextlib
 import threading
 import time
-from queue import Empty, Queue
+from queue import Queue
 from threading import Thread
 from typing import TYPE_CHECKING, ClassVar
 
@@ -68,7 +67,8 @@ class HeadlessWidget(Widget, DebugMixin):
 
         __import__('kivy.core.window')
 
-        self.last_render = time.time()
+        self.last_thread: threading.Thread | None = None
+        self.last_render = 0
         self.render_queue = Queue(2 if config.double_buffering() else 1)
 
         self.canvas = Canvas()
@@ -145,15 +145,13 @@ class HeadlessWidget(Widget, DebugMixin):
                 self.skipped_frames += 1
 
         now = time.time()
-        if now - self.last_render < 1 / self.fps:
+        if now - self.last_render < 1 / self.fps or self.render_queue.qsize() > (
+            1 if config.double_buffering() else 0
+        ):
             self.scheduler = Clock.schedule_once(
                 self.process_frame,
                 1 / self.fps,
             )
-            return
-
-        if self.render_queue.qsize() > (1 if config.double_buffering() else 0):
-            self.skipped_frames += 1
             return
 
         data = np.frombuffer(self.fbo.texture.pixels, dtype=np.uint8).reshape(
@@ -169,20 +167,24 @@ class HeadlessWidget(Widget, DebugMixin):
         data = data[:height, :width, :]
 
         mask = np.any(data != self.previous_frame, axis=2)
+        self.previous_frame = data.copy()
         if not np.any(mask):
             return
 
-        thread = Thread(
+        self.last_thread = Thread(
             target=self.render,
             kwargs={
                 'mask': mask,
                 'data': data,
                 'x': x,
                 'y': y,
+                'last_thread': self.last_thread,
             },
             daemon=False,
         )
-        thread.start()
+        self.render_queue.put(self.last_thread)
+        self.last_thread.start()
+        self.last_render = time.time()
 
     def render(
         self: HeadlessWidget,
@@ -191,6 +193,7 @@ class HeadlessWidget(Widget, DebugMixin):
         data: NDArray[np.uint8],
         x: int,
         y: int,
+        last_thread: threading.Thread | None,
     ) -> None:
         """Render the current frame."""
         height = data.shape[0]
@@ -199,38 +202,46 @@ class HeadlessWidget(Widget, DebugMixin):
         regions = divide_into_regions(mask)
 
         if config.bandwidth_limit() != 0:
-            now = time.time()
-            size = sum(
-                [
-                    (region[2] - region[0]) * (region[3] - region[1])
-                    + config.bandwidth_limit_overhead()
-                    for region in regions
-                ],
-            )
-            HeadlessWidget.transfer_record = {
-                time: size
-                for time, size in HeadlessWidget.transfer_record.items()
-                if time > now - config.bandwidth_limit_window()
-            }
-            if (
-                sum(HeadlessWidget.transfer_record.values()) + size
-                > config.bandwidth_limit() * config.bandwidth_limit_window()
-            ):
-                logger.logger.debug(
-                    f"""postponing due to bandwidth limit, new pixels: {size} - limit: {
-                    config.bandwidth_limit() * config.bandwidth_limit_window()}""",
+            while True:
+                now = time.time()
+                size = sum(
+                    [
+                        (region[2] - region[0]) * (region[3] - region[1])
+                        + config.bandwidth_limit_overhead()
+                        for region in regions
+                    ],
                 )
-                self.scheduler = Clock.schedule_once(
-                    self.process_frame,
-                    config.bandwidth_limit_window(),
-                )
-                return
+                HeadlessWidget.transfer_record = {
+                    time: size
+                    for time, size in HeadlessWidget.transfer_record.items()
+                    if time > now - config.bandwidth_limit_window()
+                }
+                if (
+                    sum(HeadlessWidget.transfer_record.values()) + size
+                    > config.bandwidth_limit() * config.bandwidth_limit_window()
+                ):
+                    logger.logger.debug(
+                        f"""postponing due to bandwidth limit, new pixels: {
+                            size
+                        } - limit: {
+                            config.bandwidth_limit() * config.bandwidth_limit_window()
+                        }""",
+                    )
+                    time.sleep(
+                        max(
+                            min(HeadlessWidget.transfer_record.keys())
+                            - (time.time() - config.bandwidth_limit_window()),
+                            0,
+                        ),
+                    )
+                    continue
+                break
             HeadlessWidget.transfer_record[now] = size
 
-        self.last_render = time.time()
-        self.previous_frame = data
-
         alpha_mask = np.repeat(mask[:, :, np.newaxis], 4, axis=2)
+
+        if last_thread:
+            last_thread.join()
 
         HeadlessWidget.raw_data[y : y + height, x : x + width, :][alpha_mask] = data[
             alpha_mask
@@ -247,13 +258,6 @@ class HeadlessWidget(Widget, DebugMixin):
             chunk,
         )
 
-        last_thread = None
-        with contextlib.suppress(Empty):
-            last_thread = self.render_queue.get_nowait()
-        self.render_queue.put(threading.current_thread())
-        if last_thread:
-            last_thread.join()
-
         config.callback()(
             regions=[
                 {
@@ -267,6 +271,7 @@ class HeadlessWidget(Widget, DebugMixin):
                 for region in regions
             ],
         )
+        self.render_queue.get_nowait()
 
     @classmethod
     def get_instance(

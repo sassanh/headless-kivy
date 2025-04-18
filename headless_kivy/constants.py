@@ -13,16 +13,11 @@ BANDWIDTH_LIMIT_OVERHEAD = int(
 )
 WIDTH = int(os.environ.get('HEADLESS_KIVY_WIDTH', '240'))
 HEIGHT = int(os.environ.get('HEADLESS_KIVY_HEIGHT', '240'))
-IS_DEBUG_MODE = str_to_bool(os.environ.get('HEADLESS_KIVY_DEBUG', 'False')) == 1
-DOUBLE_BUFFERING = (
-    str_to_bool(
-        os.environ.get('HEADLESS_KIVY_DOUBLE_BUFFERING', 'True'),
-    )
-    == 1
+IS_DEBUG_MODE = str_to_bool(os.environ.get('HEADLESS_KIVY_DEBUG', 'False'))
+DOUBLE_BUFFERING = str_to_bool(
+    os.environ.get('HEADLESS_KIVY_DOUBLE_BUFFERING', 'True'),
 )
 ROTATION = int(os.environ.get('HEADLESS_KIVY_ROTATION', '0'))
-FLIP_HORIZONTAL = (
-    str_to_bool(os.environ.get('HEADLESS_KIVY_FLIP_HORIZONTAL', 'False')) == 1
-)
-FLIP_VERTICAL = str_to_bool(os.environ.get('HEADLESS_KIVY_FLIP_VERTICAL', 'False')) == 1
+FLIP_HORIZONTAL = str_to_bool(os.environ.get('HEADLESS_KIVY_FLIP_HORIZONTAL', 'False'))
+FLIP_VERTICAL = str_to_bool(os.environ.get('HEADLESS_KIVY_FLIP_VERTICAL', 'False'))
 REGION_SIZE = int(os.environ.get('HEADLESS_KIVY_REGION_SIZE', '60'))
