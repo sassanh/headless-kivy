@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.12.3
 
 - chore: update dependencies, update code with the latest ruff and pyright rules
 - fix: improve the guarantee that regional diffs are generated based on the previous frame, passed to the callback function sequentially and wait for the callback to finish before sending the next frame
