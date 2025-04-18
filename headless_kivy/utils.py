@@ -10,7 +10,7 @@ from kivy.metrics import dp
 from headless_kivy import config
 
 if TYPE_CHECKING:
-    from numpy._typing import NDArray
+    from numpy._typing import NDArray  # pyright: ignore[reportPrivateImportUsage]
 
 
 def divide_number(n: int) -> list[int]:

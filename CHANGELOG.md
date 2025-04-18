@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- chore: update dependencies, update code with the latest ruff and pyright rules
+
 ## Version 0.12.2
 
 - fix: limit numpy version to \<2.0.0 to avoid breaking changes

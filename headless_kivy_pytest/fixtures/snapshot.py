@@ -13,8 +13,8 @@ from str_to_bool import str_to_bool
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-    from _pytest.fixtures import SubRequest
-    from numpy._typing import NDArray
+    from _pytest.fixtures import SubRequest  # pyright: ignore[reportPrivateImportUsage]
+    from numpy._typing import NDArray  # pyright: ignore[reportPrivateImportUsage]
 
 
 def write_image(image_path: Path, array: NDArray) -> None:
@@ -134,9 +134,9 @@ class WindowSnapshot:
                     write_image(image_mismatch_path, array)
             elif self.make_screenshots:
                 write_image(image_path, array)
-            assert (
-                new_snapshot == old_snapshot
-            ), f'Window snapshot mismatch - {filename}'
+            assert new_snapshot == old_snapshot, (
+                f'Window snapshot mismatch - {filename}'
+            )
 
         self.test_counter[title] += 1
 
@@ -168,9 +168,8 @@ def window_snapshot(
         request.config.getoption(
             '--override-window-snapshots',
             default=cast(
-                Any,
-                str_to_bool(os.environ.get('UBO_TEST_OVERRIDE_SNAPSHOTS', 'false'))
-                == 1,
+                'Any',
+                str_to_bool(os.environ.get('UBO_TEST_OVERRIDE_SNAPSHOTS', 'false')),
             ),
         )
         is True
@@ -179,8 +178,8 @@ def window_snapshot(
         request.config.getoption(
             '--make-screenshots',
             default=cast(
-                Any,
-                str_to_bool(os.environ.get('UBO_TEST_MAKE_SCREENSHOTS', 'false')) == 1,
+                'Any',
+                str_to_bool(os.environ.get('UBO_TEST_MAKE_SCREENSHOTS', 'false')),
             ),
         )
         is True

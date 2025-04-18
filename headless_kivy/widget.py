@@ -34,7 +34,7 @@ from headless_kivy.utils import (
 
 if TYPE_CHECKING:
     from kivy._clock import ClockEvent
-    from numpy._typing import NDArray
+    from numpy._typing import NDArray  # pyright: ignore[reportPrivateImportUsage]
 
 
 class HeadlessWidget(Widget, DebugMixin):

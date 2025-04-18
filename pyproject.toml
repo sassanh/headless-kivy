@@ -20,8 +20,8 @@ test = ["pypng >= 0.20220715.0"]
 [tool.uv]
 dev-dependencies = [
   "poethepoet >= 0.29.0",
-  "pyright >= 1.1.386",
-  "ruff >= 0.7.1",
+  "pyright >= 1.1.399",
+  "ruff >= 0.11.6",
   "pytest >= 8.3.3",
 ]
 

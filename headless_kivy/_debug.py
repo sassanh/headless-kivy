@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from kivy.graphics.context_instructions import Color
     from kivy.graphics.fbo import Fbo
     from kivy.graphics.vertex_instructions import Rectangle
-    from numpy._typing import NDArray
+    from numpy._typing import NDArray  # pyright: ignore[reportPrivateImportUsage]
 
 
 class DebugMixin:

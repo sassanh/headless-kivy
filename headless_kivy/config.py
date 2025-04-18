@@ -27,7 +27,7 @@ from headless_kivy.constants import (
 from headless_kivy.logger import add_file_handler, add_stdout_handler
 
 if TYPE_CHECKING:
-    from numpy._typing import NDArray
+    from numpy._typing import NDArray  # pyright: ignore[reportPrivateImportUsage]
 
 kivy.require('2.1.0')
 
