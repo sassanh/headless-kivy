@@ -60,6 +60,7 @@ class DemoApp(App):
         """Build the demo application."""
         fbg = FboGridLayout(rows=2, cols=2)
 
+        shape_by_label = {}
         for index, color in enumerate(
             [(1, 0, 0, 1), (0, 1, 0, 1), (0, 0, 1, 1), (1, 1, 0, 0)],
         ):
@@ -67,17 +68,17 @@ class DemoApp(App):
 
             with label.canvas.before:
                 Color(*color)
-                label.shape = Ellipse()
+                shape_by_label[label] = Ellipse()
 
             label.bind(
                 size=lambda label, *_: (
                     setattr(
-                        label.shape,
+                        shape_by_label[label],
                         'size',
                         (label.size[0] / 2, label.size[1] / 2),
                     ),
                     setattr(
-                        label.shape,
+                        shape_by_label[label],
                         'pos',
                         (
                             label.pos[0] + label.size[0] / 4,
@@ -86,7 +87,7 @@ class DemoApp(App):
                     ),
                 ),
                 pos=lambda label, *_: setattr(
-                    label.shape,
+                    shape_by_label[label],
                     'pos',
                     (
                         label.pos[0] + label.size[0] / 4,

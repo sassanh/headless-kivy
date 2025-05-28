@@ -6,9 +6,10 @@
 
 from __future__ import annotations
 
+import contextlib
 import threading
 import time
-from queue import Queue
+from queue import Empty, Queue
 from threading import Thread
 from typing import TYPE_CHECKING, ClassVar
 
@@ -67,6 +68,7 @@ class HeadlessWidget(Widget, DebugMixin):
 
         __import__('kivy.core.window')
 
+        self.thread_lock = threading.Lock()
         self.last_thread: threading.Thread | None = None
         self.last_render = 0
         self.render_queue = Queue(2 if config.double_buffering() else 1)
@@ -171,19 +173,20 @@ class HeadlessWidget(Widget, DebugMixin):
         if not np.any(mask):
             return
 
-        self.last_thread = Thread(
-            target=self.render,
-            kwargs={
-                'mask': mask,
-                'data': data,
-                'x': x,
-                'y': y,
-                'last_thread': self.last_thread,
-            },
-            daemon=False,
-        )
-        self.render_queue.put(self.last_thread)
-        self.last_thread.start()
+        with self.thread_lock:
+            new_thread = self.last_thread = Thread(
+                target=self.render,
+                kwargs={
+                    'mask': mask,
+                    'data': data,
+                    'x': x,
+                    'y': y,
+                    'last_thread': self.last_thread,
+                },
+                daemon=False,
+            )
+            self.render_queue.put(new_thread)
+        new_thread.start()
         self.last_render = time.time()
 
     def render(
@@ -271,7 +274,8 @@ class HeadlessWidget(Widget, DebugMixin):
                 for region in regions
             ],
         )
-        self.render_queue.get_nowait()
+        with contextlib.suppress(Empty):
+            self.render_queue.get_nowait()
 
     @classmethod
     def get_instance(

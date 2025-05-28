@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- fix: deal with the threads being initialized in the `process_frame` callback with a `threading.Lock`
+
 ## Version 0.12.3
 
 - chore: update dependencies, update code with the latest ruff and pyright rules

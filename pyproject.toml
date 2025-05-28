@@ -89,6 +89,7 @@ profile = "black"
 [tool.pyright]
 exclude = ['typings', '.venv']
 filterwarnings = 'error'
+disableTaggedHints = true
 
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:"]
