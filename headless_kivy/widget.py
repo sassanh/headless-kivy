@@ -9,8 +9,8 @@ from __future__ import annotations
 import contextlib
 import threading
 import time
+from concurrent.futures import Future, ThreadPoolExecutor
 from queue import Empty, Queue
-from threading import Thread
 from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
@@ -49,7 +49,7 @@ class HeadlessWidget(Widget, DebugMixin):
 
     last_render: float
     scheduler: ClockEvent | None = None
-    render_queue: Queue[Thread]
+    render_queue: Queue[Future]
 
     previous_frame: NDArray[np.uint8] | None = None
     fbo: Fbo
@@ -68,8 +68,11 @@ class HeadlessWidget(Widget, DebugMixin):
 
         __import__('kivy.core.window')
 
+        self.thread_pool = ThreadPoolExecutor(
+            max_workers=2 if config.double_buffering() else 1,
+        )
         self.thread_lock = threading.Lock()
-        self.last_thread: threading.Thread | None = None
+        self.last_render_task: Future | None = None
         self.last_render = 0
         self.render_queue = Queue(2 if config.double_buffering() else 1)
 
@@ -174,19 +177,16 @@ class HeadlessWidget(Widget, DebugMixin):
             return
 
         with self.thread_lock:
-            new_thread = self.last_thread = Thread(
-                target=self.render,
-                kwargs={
-                    'mask': mask,
-                    'data': data,
-                    'x': x,
-                    'y': y,
-                    'last_thread': self.last_thread,
-                },
-                daemon=False,
+            future = self.thread_pool.submit(
+                self.render,
+                mask=mask,
+                data=data,
+                x=x,
+                y=y,
+                last_render_task=self.last_render_task,
             )
-            self.render_queue.put(new_thread)
-        new_thread.start()
+            self.last_render_task = future
+            self.render_queue.put(future)
         self.last_render = time.time()
 
     def render(
@@ -196,7 +196,7 @@ class HeadlessWidget(Widget, DebugMixin):
         data: NDArray[np.uint8],
         x: int,
         y: int,
-        last_thread: threading.Thread | None,
+        last_render_task: Future | None = None,
     ) -> None:
         """Render the current frame."""
         height = data.shape[0]
@@ -243,8 +243,8 @@ class HeadlessWidget(Widget, DebugMixin):
 
         alpha_mask = np.repeat(mask[:, :, np.newaxis], 4, axis=2)
 
-        if last_thread:
-            last_thread.join()
+        if last_render_task:
+            last_render_task.result()
 
         HeadlessWidget.raw_data[y : y + height, x : x + width, :][alpha_mask] = data[
             alpha_mask
