@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## Version 0.12.4
 
 - fix: deal with the threads being initialized in the `process_frame` callback with a `threading.Lock`
 - refactor: use a thread-pool instead of creating a new thread for each render
