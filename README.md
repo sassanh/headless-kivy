@@ -44,6 +44,7 @@ pip install headless-kivy[test]
        rotation=1, # gets multiplied by 90 degrees
        flip_horizontal=True,
        double_buffering=True, # let headless kivy generate the next frame while the previous callback is still running
+       window_mode='hidden', # 'hidden' (default) renders off-screen; 'auto' lets SDL grab a physical display
    )
    ```
 
@@ -130,6 +131,21 @@ If set to `True`, it will flip the display horizontally.
 #### `flip_vertical`
 
 If set to `True`, it will flip the display vertically.
+
+#### `window_mode`
+
+Controls whether Kivy is allowed to grab a physical display. Two values:
+
+- `'hidden'` (default): headless-kivy sets `SDL_VIDEODRIVER=offscreen` before Kivy initializes, so SDL renders to an off-screen OpenGL context. No HDMI / DSI / KMSDRM connector is touched, and the FBO callback still receives frames. This is the right setting when the only "real" display you care about is driven from the callback (e.g. an SPI panel on a Raspberry Pi) — an attached HDMI monitor will keep showing whatever it was showing before (typically the Linux console) instead of being hijacked by Kivy's window.
+- `'auto'`: headless-kivy does not touch `SDL_VIDEODRIVER`; SDL picks a display normally. On a Pi kiosk this means the KMSDRM video driver will grab the framebuffer and Kivy's window will cover the connected display.
+
+You can also set this via environment variable:
+
+```bash
+export HEADLESS_KIVY_WINDOW_MODE=auto
+```
+
+If `SDL_VIDEODRIVER` is already set in the environment when you call `setup_headless_kivy`, headless-kivy will respect it and leave it alone (an INFO log line is emitted in that case).
 
 ## 🤝 Contributing
 

@@ -3,8 +3,9 @@
 
 from __future__ import annotations
 
+import os
 from functools import cache
-from typing import TYPE_CHECKING, NoReturn, NotRequired, Protocol, TypedDict
+from typing import TYPE_CHECKING, Literal, NoReturn, NotRequired, Protocol, TypedDict
 
 import kivy
 import numpy as np
@@ -23,8 +24,11 @@ from headless_kivy.constants import (
     REGION_SIZE,
     ROTATION,
     WIDTH,
+    WINDOW_MODE,
 )
-from headless_kivy.logger import add_file_handler, add_stdout_handler
+from headless_kivy.logger import add_file_handler, add_stdout_handler, logger
+
+WindowMode = Literal['hidden', 'auto']
 
 if TYPE_CHECKING:
     from numpy._typing import NDArray  # pyright: ignore[reportPrivateImportUsage]
@@ -64,6 +68,13 @@ class SetupHeadlessConfig(TypedDict):
     region_size: `int`, optional
         Approximate size of rectangles to divide the screen into and see if they need to
         be updated.
+    window_mode: `'hidden' | 'auto'`, optional
+        Controls whether Kivy is allowed to grab a physical display.
+        - `'hidden'` (default): set `SDL_VIDEODRIVER=offscreen` so SDL renders
+          to an off-screen OpenGL context. No HDMI/DSI/KMSDRM connector is
+          touched; the FBO callback still receives frames.
+        - `'auto'`: do not touch `SDL_VIDEODRIVER`; SDL picks a display the
+          normal way (on a Pi kiosk this means KMSDRM grabs the framebuffer).
 
     """
 
@@ -79,6 +90,7 @@ class SetupHeadlessConfig(TypedDict):
     flip_horizontal: NotRequired[bool]
     flip_vertical: NotRequired[bool]
     region_size: NotRequired[int]
+    window_mode: NotRequired[WindowMode]
 
 
 _config: SetupHeadlessConfig | None = None
@@ -106,6 +118,20 @@ def setup_headless_kivy(config: SetupHeadlessConfig) -> None:
     if is_debug_mode():
         add_stdout_handler()
         add_file_handler()
+
+    mode = config.get('window_mode', WINDOW_MODE)
+    if mode not in ('hidden', 'auto'):
+        msg = f"window_mode must be 'hidden' or 'auto', got {mode!r}"
+        raise ValueError(msg)
+    if mode == 'hidden':
+        if 'SDL_VIDEODRIVER' in os.environ:
+            logger.info(
+                "window_mode='hidden' but SDL_VIDEODRIVER is already set to "
+                "%r; leaving it alone",
+                os.environ['SDL_VIDEODRIVER'],
+            )
+        else:
+            os.environ['SDL_VIDEODRIVER'] = 'offscreen'
 
     Config.set('kivy', 'kivy_clock', 'default')
     Config.set('graphics', 'fbo', 'force-hardware')
@@ -235,4 +261,12 @@ def region_size() -> int:
     """Return the approximate size of rectangles to divide the screen into."""
     if _config:
         return _config.get('region_size', REGION_SIZE)
+    report_uninitialized()
+
+
+@cache
+def window_mode() -> WindowMode:
+    """Return the window mode (`'hidden'` or `'auto'`)."""
+    if _config:
+        return _config.get('window_mode', WINDOW_MODE)  # pyright: ignore[reportReturnType]
     report_uninitialized()
