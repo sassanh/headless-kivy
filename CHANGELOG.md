@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.13.0
+
+- feat: add `window_mode` option to allow running Kivy in offscreen mode, preventing it from grabbing attached monitors when using FBO callbacks
+- chore: switch hatch version source to code to remove dependency on `setuptools_scm` entry points and improve build stability
+- chore: update linting rules to ignore deferred imports (PLC0415) and fix `rsplit` usage (PLC0207) for newer Ruff compatibility
+
 ## Version 0.12.4
 
 - fix: deal with the threads being initialized in the `process_frame` callback with a `threading.Lock`
